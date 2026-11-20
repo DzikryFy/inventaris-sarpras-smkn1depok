@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.BuildCircle
@@ -53,6 +54,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -70,11 +72,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.inventarissarprassmkn1depok.R
 import com.example.inventarissarprassmkn1depok.data.local.model.PeminjamanDetail
 import com.example.inventarissarprassmkn1depok.ui.theme.CardBorder
+import com.example.inventarissarprassmkn1depok.ui.theme.Error
 import com.example.inventarissarprassmkn1depok.ui.theme.OnSurface
 import com.example.inventarissarprassmkn1depok.ui.theme.OnSurfaceVariant
 import com.example.inventarissarprassmkn1depok.ui.theme.PrimaryContainer
@@ -172,17 +176,19 @@ fun DashboardScreen(
                         )
                     }
 
-                    Box(
+                    IconButton(
+                        onClick = { showLogoutDialog = true },
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(38.dp)
                             .clip(CircleShape)
-                            .border(BorderStroke(1.5.dp, Secondary), CircleShape)
-                            .clickable { showLogoutDialog = true }
+                            .background(SurfaceContainerLow)
+                            .border(BorderStroke(1.dp, CardBorder), CircleShape)
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_avatar_admin),
-                            contentDescription = "Profil Petugas (Klik untuk Keluar)",
-                            modifier = Modifier.fillMaxSize()
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Logout,
+                            contentDescription = "Keluar Akun",
+                            tint = Error,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
@@ -200,6 +206,14 @@ fun DashboardScreen(
             item {
                 Spacer(modifier = Modifier.height(2.dp))
                 // 1. Identity & Daily Status Banner
+                val userRoleSubtitle = when {
+                    uiState.adminNip.startsWith("1985") || uiState.adminName.contains("Petugas", ignoreCase = true) -> "Koordinator Sarpras SMKN 1 Depok"
+                    uiState.adminName.contains("Toolman", ignoreCase = true) || uiState.adminNip.startsWith("1992") -> "Teknisi Lab & Toolman Komputer"
+                    uiState.adminName.contains("Guru", ignoreCase = true) || uiState.adminNip.startsWith("1979") -> "Guru / Tenaga Pendidik (Dapodik)"
+                    uiState.adminNip == "22231045" || uiState.adminName.contains("Siswa", ignoreCase = true) -> "Siswa Peminjam Aktif (Dapodik)"
+                    else -> "Staf Sarpras SMKN 1 Depok"
+                }
+
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -210,11 +224,14 @@ fun DashboardScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(14.dp),
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
@@ -228,48 +245,59 @@ fun DashboardScreen(
                                 )
                                 Box(
                                     modifier = Modifier
-                                        .size(11.dp)
+                                        .size(12.dp)
                                         .clip(CircleShape)
                                         .background(StatusAvailableDot)
                                         .border(BorderStroke(2.dp, Color.White), CircleShape)
-                                    .align(Alignment.BottomEnd)
+                                        .align(Alignment.BottomEnd)
                                 )
                             }
 
-                            Column {
+                            Column(modifier = Modifier.weight(1f, fill = false)) {
                                 Text(
                                     text = "Halo, ${uiState.adminName}",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = OnSurface
+                                    color = OnSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
+                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "Staf Sarpras (Admin)",
+                                    text = userRoleSubtitle,
                                     fontSize = 12.sp,
-                                    color = OnSurfaceVariant
+                                    color = OnSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
 
-                        Row(
-                            modifier = Modifier
-                                .background(SurfaceContainerLow, RoundedCornerShape(9999.dp))
-                                .padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        Surface(
+                            shape = RoundedCornerShape(9999.dp),
+                            color = SurfaceContainerLow,
+                            border = BorderStroke(1.dp, CardBorder)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.CalendarToday,
-                                contentDescription = null,
-                                tint = Secondary,
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Text(
-                                text = uiState.todayDateFormatted.ifEmpty { "Hari Ini" },
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = OnSurface
-                            )
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CalendarToday,
+                                    contentDescription = null,
+                                    tint = Secondary,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Text(
+                                    text = uiState.todayDateFormatted.ifEmpty { "Hari Ini" },
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = OnSurface,
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
+                            }
                         }
                     }
                 }
@@ -287,7 +315,7 @@ fun DashboardScreen(
                         Card(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(140.dp),
+                                .height(124.dp),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White),
                             border = BorderStroke(1.dp, CardBorder),
@@ -296,7 +324,7 @@ fun DashboardScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(14.dp),
+                                    .padding(12.dp),
                                 verticalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Row(
@@ -328,7 +356,7 @@ fun DashboardScreen(
                                 Column {
                                     Text(
                                         text = "${uiState.stats.totalAset}",
-                                        fontSize = 24.sp,
+                                        fontSize = 22.sp,
                                         fontFamily = FontFamily.Monospace,
                                         fontWeight = FontWeight.Bold,
                                         color = OnSurface
@@ -347,7 +375,7 @@ fun DashboardScreen(
                         Card(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(140.dp),
+                                .height(124.dp),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White),
                             border = BorderStroke(1.dp, CardBorder),
@@ -356,7 +384,7 @@ fun DashboardScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(14.dp),
+                                    .padding(12.dp),
                                 verticalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Row(
@@ -388,7 +416,7 @@ fun DashboardScreen(
                                 Column {
                                     Text(
                                         text = "${uiState.stats.siapDipinjam}",
-                                        fontSize = 24.sp,
+                                        fontSize = 22.sp,
                                         fontFamily = FontFamily.Monospace,
                                         fontWeight = FontWeight.Bold,
                                         color = OnSurface
@@ -427,7 +455,7 @@ fun DashboardScreen(
                         Card(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(140.dp),
+                                .height(124.dp),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White),
                             border = BorderStroke(1.dp, CardBorder),
@@ -436,7 +464,7 @@ fun DashboardScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(14.dp),
+                                    .padding(12.dp),
                                 verticalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Row(
@@ -468,7 +496,7 @@ fun DashboardScreen(
                                 Column {
                                     Text(
                                         text = "${uiState.stats.sedangDipinjam}",
-                                        fontSize = 24.sp,
+                                        fontSize = 22.sp,
                                         fontFamily = FontFamily.Monospace,
                                         fontWeight = FontWeight.Bold,
                                         color = OnSurface
@@ -501,7 +529,7 @@ fun DashboardScreen(
                         Card(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(140.dp),
+                                .height(124.dp),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White),
                             border = BorderStroke(1.dp, CardBorder),
@@ -510,7 +538,7 @@ fun DashboardScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(14.dp),
+                                    .padding(12.dp),
                                 verticalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Row(
@@ -542,7 +570,7 @@ fun DashboardScreen(
                                 Column {
                                     Text(
                                         text = "${uiState.stats.perluServis}",
-                                        fontSize = 24.sp,
+                                        fontSize = 22.sp,
                                         fontFamily = FontFamily.Monospace,
                                         fontWeight = FontWeight.Bold,
                                         color = OnSurface

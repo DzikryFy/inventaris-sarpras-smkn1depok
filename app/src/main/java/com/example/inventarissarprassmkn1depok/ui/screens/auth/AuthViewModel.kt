@@ -26,8 +26,7 @@ data class AuthUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val loginSuccess: Boolean = false,
-    val loggedInAdmin: AdminEntity? = null,
-    val isScanSimulationActive: Boolean = false
+    val loggedInAdmin: AdminEntity? = null
 )
 
 class AuthViewModel(
@@ -81,14 +80,6 @@ class AuthViewModel(
                     errorMessage = null
                 )
             }
-        }
-    }
-
-    fun triggerScanSimulation() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isScanSimulationActive = true) }
-            delay(4000)
-            _uiState.update { it.copy(isScanSimulationActive = false) }
         }
     }
 

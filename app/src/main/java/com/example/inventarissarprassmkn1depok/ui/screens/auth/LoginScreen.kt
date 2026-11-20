@@ -28,10 +28,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Contactless
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -530,109 +528,9 @@ fun LoginScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // 4. Divider Utility
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    color = CardBorder
-                )
-                Text(
-                    text = "Atau Verifikasi Cepat",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = OnSurfaceVariant,
-                    letterSpacing = 0.5.sp,
-                    modifier = Modifier.padding(horizontal = 12.dp)
-                )
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    color = CardBorder
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 5. Alternative Quick Access: RFID / Card Scanner
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .clickable { viewModel.triggerScanSimulation() },
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = BorderStroke(1.dp, CardBorder)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .background(SurfaceContainerHigh, RoundedCornerShape(8.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.QrCodeScanner,
-                            contentDescription = null,
-                            tint = Secondary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "Scan Kartu Identitas (RFID / Barcode)",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = OnSurface
-                    )
-                }
-            }
-
-            // Interactive RFID Simulation Banner
-            AnimatedVisibility(
-                visible = uiState.isScanSimulationActive,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp)
-                        .background(StatusAvailableBg, RoundedCornerShape(12.dp))
-                        .border(BorderStroke(1.dp, StatusAvailableDot.copy(alpha = 0.3f)), RoundedCornerShape(12.dp))
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Contactless,
-                        contentDescription = null,
-                        tint = StatusAvailableText,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Sensor RFID Siap. Dekatkan kartu ke pemindai NFC/kamera.",
-                        fontSize = 12.sp,
-                        color = StatusAvailableText,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // 6. Institutional Security & Verification Footer
+            // Institutional Security & Verification Footer
             Text(
                 text = "SMKN 1 Depok • Sarpras App",
                 fontSize = 12.sp,

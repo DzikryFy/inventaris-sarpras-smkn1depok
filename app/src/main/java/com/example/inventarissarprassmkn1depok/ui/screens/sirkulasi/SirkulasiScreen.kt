@@ -66,6 +66,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -82,6 +83,8 @@ import com.example.inventarissarprassmkn1depok.ui.theme.Outline
 import com.example.inventarissarprassmkn1depok.ui.theme.OutlineVariant
 import com.example.inventarissarprassmkn1depok.ui.theme.PrimaryContainer
 import com.example.inventarissarprassmkn1depok.ui.theme.Secondary
+import com.example.inventarissarprassmkn1depok.ui.utils.BarangImageHelper
+import com.example.inventarissarprassmkn1depok.ui.utils.UserAvatarHelper
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusAvailableBg
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusAvailableDot
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusAvailableText
@@ -583,21 +586,42 @@ private fun PeminjamanItemCard(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = loan.namaPeminjam,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = OnSurface
-                    )
-                    Text(
-                        text = "ID: ${loan.nomorIdentitas}",
-                        fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace,
-                        color = OnSurfaceVariant
-                    )
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .border(BorderStroke(1.dp, CardBorder), CircleShape)
+                    ) {
+                        Image(
+                            painter = painterResource(id = UserAvatarHelper.getBorrowerAvatarRes(loan.tipePeminjam, loan.nomorIdentitas)),
+                            contentDescription = loan.namaPeminjam,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                        )
+                    }
+
+                    Column {
+                        Text(
+                            text = loan.namaPeminjam,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = OnSurface
+                        )
+                        Text(
+                            text = "ID: ${loan.nomorIdentitas}",
+                            fontSize = 11.sp,
+                            fontFamily = FontFamily.Monospace,
+                            color = OnSurfaceVariant
+                        )
+                    }
                 }
 
                 Box(
@@ -622,43 +646,63 @@ private fun PeminjamanItemCard(
                 shape = RoundedCornerShape(10.dp),
                 elevation = CardDefaults.cardElevation(0.dp)
             ) {
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.White)
+                            .border(BorderStroke(1.dp, CardBorder), RoundedCornerShape(8.dp)),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Inventory2,
-                            contentDescription = null,
-                            tint = Secondary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Text(
-                            text = loan.namaBarang,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = OnSurface
-                        )
-                        Text(
-                            text = "(${loan.kodeBarang})",
-                            fontSize = 11.sp,
-                            fontFamily = FontFamily.Monospace,
-                            color = OnSurfaceVariant
+                        Image(
+                            painter = painterResource(id = BarangImageHelper.getDrawableRes(loan.kodeBarang, loan.namaBarang, loan.namaKategori)),
+                            contentDescription = loan.namaBarang,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(4.dp),
+                            contentScale = ContentScale.Fit
                         )
                     }
 
-                    Text(
-                        text = "Keperluan: \"${loan.keperluanKegiatan}\"",
-                        fontSize = 11.sp,
-                        color = OnSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(3.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = loan.namaBarang,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = OnSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                text = "(${loan.kodeBarang})",
+                                fontSize = 11.sp,
+                                fontFamily = FontFamily.Monospace,
+                                color = OnSurfaceVariant
+                            )
+                        }
+
+                        Text(
+                            text = "Keperluan: \"${loan.keperluanKegiatan}\"",
+                            fontSize = 11.sp,
+                            color = OnSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
 

@@ -66,6 +66,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -75,10 +76,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.inventarissarprassmkn1depok.R
 import com.example.inventarissarprassmkn1depok.data.local.model.PeminjamanDetail
+import com.example.inventarissarprassmkn1depok.ui.components.ProfileBottomSheet
 import com.example.inventarissarprassmkn1depok.ui.theme.CardBorder
 import com.example.inventarissarprassmkn1depok.ui.theme.Error
 import com.example.inventarissarprassmkn1depok.ui.theme.OnSurface
 import com.example.inventarissarprassmkn1depok.ui.theme.OnSurfaceVariant
+import com.example.inventarissarprassmkn1depok.ui.utils.BarangImageHelper
+import com.example.inventarissarprassmkn1depok.ui.utils.UserAvatarHelper
 import com.example.inventarissarprassmkn1depok.ui.theme.PrimaryContainer
 import com.example.inventarissarprassmkn1depok.ui.theme.Secondary
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusAvailableBg
@@ -111,7 +115,9 @@ fun DashboardScreen(
     var selectedCondition by remember { mutableStateOf("Baik") }
     var returnNotes by remember { mutableStateOf("") }
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showProfileSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val profileSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(uiState.returnSuccessMessage) {
         uiState.returnSuccessMessage?.let { msg ->
@@ -204,16 +210,12 @@ fun DashboardScreen(
             item {
                 Spacer(modifier = Modifier.height(2.dp))
                 // 1. Identity & Daily Status Banner
-                val userRoleSubtitle = when {
-                    uiState.adminNip.startsWith("1985") || uiState.adminName.contains("Petugas", ignoreCase = true) -> "Koordinator Sarpras SMKN 1 Depok"
-                    uiState.adminName.contains("Toolman", ignoreCase = true) || uiState.adminNip.startsWith("1992") -> "Teknisi Lab & Toolman Komputer"
-                    uiState.adminName.contains("Guru", ignoreCase = true) || uiState.adminNip.startsWith("1979") -> "Guru / Tenaga Pendidik (Dapodik)"
-                    uiState.adminNip == "22231045" || uiState.adminName.contains("Siswa", ignoreCase = true) -> "Siswa Peminjam Aktif (Dapodik)"
-                    else -> "Staf Sarpras SMKN 1 Depok"
-                }
+                val userRoleSubtitle = uiState.roleTitle
 
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showProfileSheet = true },
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     border = BorderStroke(1.dp, CardBorder),
@@ -235,7 +237,7 @@ fun DashboardScreen(
                         ) {
                             Box(modifier = Modifier.size(44.dp)) {
                                 Image(
-                                    painter = painterResource(id = R.drawable.ic_avatar_admin),
+                                    painter = painterResource(id = uiState.avatarResId),
                                     contentDescription = "Avatar",
                                     modifier = Modifier
                                         .fillMaxSize()
@@ -730,13 +732,46 @@ fun DashboardScreen(
                                 }
                             }
 
-                            // Item Name & Category
-                            Text(
-                                text = loan.namaBarang,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = OnSurface
-                            )
+                            // Item Image Thumbnail + Name & Category
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(SurfaceContainerLow)
+                                        .border(BorderStroke(1.dp, CardBorder), RoundedCornerShape(10.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = BarangImageHelper.getDrawableRes(loan.kodeBarang, loan.namaBarang, loan.namaKategori)),
+                                        contentDescription = loan.namaBarang,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(4.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                }
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = loan.namaBarang,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = OnSurface,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = loan.namaKategori,
+                                        fontSize = 11.sp,
+                                        color = OnSurfaceVariant
+                                    )
+                                }
+                            }
 
                             // Borrower Details Bento Slice
                             Row(
@@ -753,15 +788,17 @@ fun DashboardScreen(
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(28.dp)
-                                            .background(Color.White, CircleShape),
+                                            .size(30.dp)
+                                            .clip(CircleShape)
+                                            .border(BorderStroke(1.dp, CardBorder), CircleShape),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Person,
+                                        Image(
+                                            painter = painterResource(id = UserAvatarHelper.getBorrowerAvatarRes(loan.tipePeminjam, loan.nomorIdentitas)),
                                             contentDescription = null,
-                                            tint = Secondary,
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clip(CircleShape)
                                         )
                                     }
                                     Column {
@@ -1117,6 +1154,24 @@ fun DashboardScreen(
             },
             containerColor = Color.White,
             shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    // Modal Bottom Sheet: Detail Profil Pengguna
+    if (showProfileSheet) {
+        ProfileBottomSheet(
+            adminName = uiState.adminName,
+            adminNip = uiState.adminNip,
+            adminContact = uiState.adminContact,
+            avatarResId = uiState.avatarResId,
+            roleTitle = uiState.roleTitle,
+            isStaff = uiState.isStaff,
+            sheetState = profileSheetState,
+            onDismiss = { showProfileSheet = false },
+            onLogout = {
+                showProfileSheet = false
+                showLogoutDialog = true
+            }
         )
     }
 }

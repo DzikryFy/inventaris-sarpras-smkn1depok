@@ -3,10 +3,12 @@ package com.example.inventarissarprassmkn1depok.ui.screens.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.inventarissarprassmkn1depok.R
 import com.example.inventarissarprassmkn1depok.data.local.model.DashboardStats
 import com.example.inventarissarprassmkn1depok.data.local.model.PeminjamanDetail
 import com.example.inventarissarprassmkn1depok.data.repository.AuthRepository
 import com.example.inventarissarprassmkn1depok.data.repository.SarprasRepository
+import com.example.inventarissarprassmkn1depok.ui.utils.UserAvatarHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +28,9 @@ data class DashboardUiState(
     val todayIso: String = "",
     val adminName: String = "Petugas Sarpras SMKN 1 Depok",
     val adminNip: String = "198507152010011002",
+    val adminContact: String = "081234567890",
+    val avatarResId: Int = R.drawable.ic_avatar_admin,
+    val roleTitle: String = "Koordinator Sarpras SMKN 1 Depok",
     val isStaff: Boolean = true,
     val isLoading: Boolean = false,
     val returnSuccessMessage: String? = null
@@ -58,6 +63,15 @@ class DashboardViewModel(
     ) { stats, loans, message ->
         val admin = authRepository.getLoggedInAdmin()
         val isStaff = authRepository.isStaff()
+        val avatarRes = UserAvatarHelper.getAvatarRes(admin)
+        val roleTitle = when {
+            admin?.nipPetugas?.startsWith("1985") == true || admin?.username?.equals("admin", ignoreCase = true) == true -> "Koordinator Sarpras SMKN 1 Depok"
+            admin?.username?.equals("toolman", ignoreCase = true) == true || admin?.nipPetugas?.startsWith("1992") == true -> "Teknisi Lab & Toolman Komputer"
+            admin?.username?.equals("guru", ignoreCase = true) == true || admin?.nipPetugas?.startsWith("1979") == true -> "Guru / Tenaga Pendidik (Dapodik)"
+            admin?.nipPetugas == "22231045" || admin?.username?.equals("siswa", ignoreCase = true) == true -> "Siswa Peminjam Aktif (Dapodik)"
+            else -> "Staf Sarpras SMKN 1 Depok"
+        }
+
         val userLoans = if (isStaff) {
             loans
         } else {
@@ -77,6 +91,9 @@ class DashboardViewModel(
             todayIso = todayIso,
             adminName = admin?.namaLengkap ?: "Petugas Sarpras SMKN 1 Depok",
             adminNip = admin?.nipPetugas ?: "198507152010011002",
+            adminContact = admin?.kontak ?: "",
+            avatarResId = avatarRes,
+            roleTitle = roleTitle,
             isStaff = isStaff,
             isLoading = false,
             returnSuccessMessage = message

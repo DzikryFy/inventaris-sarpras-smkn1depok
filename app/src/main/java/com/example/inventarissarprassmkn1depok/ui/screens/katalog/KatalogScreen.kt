@@ -1,6 +1,7 @@
 package com.example.inventarissarprassmkn1depok.ui.screens.katalog
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -67,8 +68,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.inventarissarprassmkn1depok.data.local.model.BarangWithKategori
@@ -91,6 +95,7 @@ import com.example.inventarissarprassmkn1depok.ui.theme.Surface
 import com.example.inventarissarprassmkn1depok.ui.theme.SurfaceContainer
 import com.example.inventarissarprassmkn1depok.ui.theme.SurfaceContainerHigh
 import com.example.inventarissarprassmkn1depok.ui.theme.SurfaceContainerLow
+import com.example.inventarissarprassmkn1depok.ui.utils.BarangImageHelper
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -230,7 +235,7 @@ fun KatalogScreen(
                 }
             }
 
-            // 2. Search & Barcode Action Hub
+            // 2. Search Action Hub
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -242,7 +247,7 @@ fun KatalogScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 4.dp),
+                            .padding(horizontal = 12.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
@@ -267,6 +272,18 @@ fun KatalogScreen(
                                     color = Outline
                                 )
                             },
+                            trailingIcon = {
+                                if (uiState.searchQuery.isNotEmpty()) {
+                                    IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Hapus",
+                                            tint = OnSurfaceVariant,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+                            },
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = OnSurface,
@@ -278,38 +295,6 @@ fun KatalogScreen(
                                 unfocusedBorderColor = Color.Transparent
                             )
                         )
-
-                        Box(
-                            modifier = Modifier
-                                .height(36.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(SurfaceContainer)
-                                .clickable {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("Pemindai QR/Barcode diaktifkan")
-                                    }
-                                }
-                                .padding(horizontal = 10.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.QrCodeScanner,
-                                    contentDescription = "Pindai",
-                                    tint = Secondary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "Pindai",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = OnSurface
-                                )
-                            }
-                        }
                     }
                 }
             }
@@ -460,29 +445,23 @@ fun KatalogScreen(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 verticalAlignment = Alignment.Top
                             ) {
-                                // Category Pill Box
+                                // Equipment Product Image Card (72x72dp)
                                 Box(
                                     modifier = Modifier
-                                        .size(56.dp)
+                                        .size(72.dp)
                                         .clip(RoundedCornerShape(12.dp))
-                                        .background(SurfaceContainerLow),
+                                        .background(SurfaceContainerLow)
+                                        .border(BorderStroke(1.dp, CardBorder), RoundedCornerShape(12.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(
-                                            text = categoryPrefix,
-                                            fontSize = 15.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Secondary
-                                        )
-                                        Text(
-                                            text = "SARPRAS",
-                                            fontSize = 8.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = OnSurfaceVariant,
-                                            letterSpacing = 0.5.sp
-                                        )
-                                    }
+                                    Image(
+                                        painter = painterResource(id = BarangImageHelper.getDrawableRes(item.kodeBarang, item.namaBarang, item.namaKategori)),
+                                        contentDescription = item.namaBarang,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(6.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
                                 }
 
                                 Column(
@@ -686,25 +665,51 @@ fun KatalogScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text(
-                            text = "FORMULIR SIRKULASI PINJAM",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Secondary,
-                            letterSpacing = 0.5.sp
-                        )
-                        Text(
-                            text = barang.namaBarang,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = OnSurface
-                        )
-                        Text(
-                            text = "${barang.kodeBarang} • Sisa Tersedia: ${barang.stokTersedia} unit",
-                            fontSize = 12.sp,
-                            color = OnSurfaceVariant
-                        )
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(60.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(SurfaceContainerLow)
+                                .border(BorderStroke(1.dp, CardBorder), RoundedCornerShape(12.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = BarangImageHelper.getDrawableRes(barang.kodeBarang, barang.namaBarang, barang.namaKategori)),
+                                contentDescription = barang.namaBarang,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(6.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "FORMULIR SIRKULASI PINJAM",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Secondary,
+                                letterSpacing = 0.5.sp
+                            )
+                            Text(
+                                text = barang.namaBarang,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = OnSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                text = "${barang.kodeBarang} • Sisa: ${barang.stokTersedia} unit",
+                                fontSize = 12.sp,
+                                color = OnSurfaceVariant
+                            )
+                        }
                     }
 
                     IconButton(onClick = { selectedItemForLoan = null }) {

@@ -157,39 +157,25 @@ fun LaporanScreen(
             }
         },
         bottomBar = {
-            // Sticky Bottom Action Bar untuk Ekspor Laporan
-            Row(
+            // Sticky Bottom Action Bar untuk Kirim Rekapitulasi Laporan
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
                     .border(BorderStroke(1.dp, CardBorder))
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
-                OutlinedButton(
-                    onClick = { viewModel.shareLaporan(context, asCsv = true) },
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Secondary),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.Download, contentDescription = null, tint = Secondary, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "Ekspor CSV", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Secondary)
-                }
-
                 Button(
                     onClick = { viewModel.shareLaporan(context, asCsv = false) },
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Secondary),
                     modifier = Modifier
-                        .weight(1.3f)
+                        .fillMaxWidth()
                         .height(48.dp)
                 ) {
                     Icon(imageVector = Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(text = "Kirim Rekapitulasi", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Kirim Rekapitulasi Laporan", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
             }
         },

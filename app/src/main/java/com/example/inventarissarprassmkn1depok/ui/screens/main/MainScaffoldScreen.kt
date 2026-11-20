@@ -41,12 +41,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventarissarprassmkn1depok.data.local.AppDatabase
 import com.example.inventarissarprassmkn1depok.data.repository.AuthRepository
 import com.example.inventarissarprassmkn1depok.data.repository.SarprasRepository
+import com.example.inventarissarprassmkn1depok.data.repository.SirkulasiRepository
 import com.example.inventarissarprassmkn1depok.ui.components.BottomNavBar
 import com.example.inventarissarprassmkn1depok.ui.components.BottomNavTab
 import com.example.inventarissarprassmkn1depok.ui.screens.dashboard.DashboardScreen
 import com.example.inventarissarprassmkn1depok.ui.screens.dashboard.DashboardViewModel
 import com.example.inventarissarprassmkn1depok.ui.screens.katalog.KatalogScreen
 import com.example.inventarissarprassmkn1depok.ui.screens.katalog.KatalogViewModel
+import com.example.inventarissarprassmkn1depok.ui.screens.sirkulasi.SirkulasiScreen
+import com.example.inventarissarprassmkn1depok.ui.screens.sirkulasi.SirkulasiViewModel
 import com.example.inventarissarprassmkn1depok.ui.theme.CardBorder
 import com.example.inventarissarprassmkn1depok.ui.theme.OnSurface
 import com.example.inventarissarprassmkn1depok.ui.theme.OnSurfaceVariant
@@ -71,12 +74,24 @@ fun MainScaffoldScreen(
         )
     }
 
+    val sirkulasiRepository = remember {
+        SirkulasiRepository(
+            peminjamanDao = database.peminjamanDao(),
+            barangDao = database.barangDao(),
+            adminDao = database.adminDao()
+        )
+    }
+
     val dashboardViewModel: DashboardViewModel = viewModel(
         factory = DashboardViewModel.Factory(sarprasRepository, authRepository)
     )
 
     val katalogViewModel: KatalogViewModel = viewModel(
         factory = KatalogViewModel.Factory(sarprasRepository)
+    )
+
+    val sirkulasiViewModel: SirkulasiViewModel = viewModel(
+        factory = SirkulasiViewModel.Factory(sirkulasiRepository)
     )
 
     var currentTab by remember { mutableStateOf(BottomNavTab.DASHBOARD) }
@@ -101,6 +116,7 @@ fun MainScaffoldScreen(
                     DashboardScreen(
                         viewModel = dashboardViewModel,
                         onNavigateToKatalog = { currentTab = BottomNavTab.KATALOG },
+                        onNavigateToSirkulasi = { currentTab = BottomNavTab.SIRKULASI },
                         onLogout = onLogout,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -112,13 +128,9 @@ fun MainScaffoldScreen(
                     )
                 }
                 BottomNavTab.SIRKULASI -> {
-                    PlaceholderModuleScreen(
-                        title = "Sirkulasi Peminjaman",
-                        step = "Langkah 4",
-                        description = "Modul transaksi peminjaman mandiri, pengembalian instan dengan scan barcode, verifikasi kondisi fisik barang, dan approval petugas.",
-                        icon = Icons.Default.SwapHoriz,
-                        actionLabel = "Lihat Katalog Barang",
-                        onAction = { currentTab = BottomNavTab.KATALOG }
+                    SirkulasiScreen(
+                        viewModel = sirkulasiViewModel,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
                 BottomNavTab.LAPORAN -> {

@@ -87,6 +87,9 @@ interface BarangDao {
     @Query("UPDATE barang_sarpras SET stok_tersedia = MIN(stok_total, stok_tersedia + :qty) WHERE id_barang = :idBarang")
     suspend fun restoreStok(idBarang: Int, qty: Int): Int
 
+    @Query("UPDATE barang_sarpras SET kondisi = :kondisi WHERE id_barang = :idBarang")
+    suspend fun updateKondisiBarang(idBarang: Int, kondisi: String): Int
+
     @Query("SELECT COUNT(*) FROM barang_sarpras")
     suspend fun getBarangCount(): Int
 }

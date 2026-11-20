@@ -98,6 +98,7 @@ import com.example.inventarissarprassmkn1depok.ui.theme.SurfaceContainerLow
 fun DashboardScreen(
     viewModel: DashboardViewModel,
     onNavigateToKatalog: () -> Unit,
+    onNavigateToSirkulasi: (() -> Unit)? = null,
     onLogout: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -616,7 +617,7 @@ fun DashboardScreen(
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier
-                                    .clickable { onNavigateToKatalog() }
+                                    .clickable { onNavigateToSirkulasi?.invoke() ?: onNavigateToKatalog() }
                                     .padding(4.dp)
                             ) {
                                 Box(

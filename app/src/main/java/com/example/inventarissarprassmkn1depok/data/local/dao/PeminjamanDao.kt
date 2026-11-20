@@ -125,6 +125,9 @@ interface PeminjamanDao {
         val updated = updatePengembalian(idPinjam, tglKembaliReal, kondisiKembali, catatanTambahan)
         if (updated > 0) {
             barangDao.restoreStok(pinjam.idBarangFk, pinjam.jumlahPinjam)
+            if (kondisiKembali.contains("Rusak", ignoreCase = true)) {
+                barangDao.updateKondisiBarang(pinjam.idBarangFk, "Perlu Servis")
+            }
             return true
         }
         return false

@@ -26,6 +26,7 @@ data class DashboardUiState(
     val todayIso: String = "",
     val adminName: String = "Petugas Sarpras SMKN 1 Depok",
     val adminNip: String = "198507152010011002",
+    val isStaff: Boolean = true,
     val isLoading: Boolean = false,
     val returnSuccessMessage: String? = null
 )
@@ -56,13 +57,27 @@ class DashboardViewModel(
         _messageFlow
     ) { stats, loans, message ->
         val admin = authRepository.getLoggedInAdmin()
+        val isStaff = authRepository.isStaff()
+        val userLoans = if (isStaff) {
+            loans
+        } else {
+            val nip = admin?.nipPetugas ?: ""
+            val name = admin?.namaLengkap ?: ""
+            val uname = admin?.username ?: ""
+            loans.filter {
+                it.nomorIdentitas == nip ||
+                (name.isNotBlank() && it.namaPeminjam.contains(name, ignoreCase = true)) ||
+                (uname.isNotBlank() && it.namaPeminjam.contains(uname, ignoreCase = true))
+            }
+        }
         DashboardUiState(
             stats = stats,
-            activeLoans = loans,
+            activeLoans = userLoans,
             todayDateFormatted = todayFormatted,
             todayIso = todayIso,
             adminName = admin?.namaLengkap ?: "Petugas Sarpras SMKN 1 Depok",
             adminNip = admin?.nipPetugas ?: "198507152010011002",
+            isStaff = isStaff,
             isLoading = false,
             returnSuccessMessage = message
         )

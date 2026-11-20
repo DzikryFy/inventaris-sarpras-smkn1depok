@@ -41,6 +41,9 @@ fun MainScaffoldScreen(
     modifier: Modifier = Modifier
 ) {
     val authRepository = remember { AuthRepository(database.adminDao()) }
+    val isStaff = remember { authRepository.isStaff() }
+    val loggedInAdmin = remember { authRepository.getLoggedInAdmin() }
+
     val sarprasRepository = remember {
         SarprasRepository(
             barangDao = database.barangDao(),
@@ -76,7 +79,7 @@ fun MainScaffoldScreen(
     )
 
     val sirkulasiViewModel: SirkulasiViewModel = viewModel(
-        factory = SirkulasiViewModel.Factory(sirkulasiRepository)
+        factory = SirkulasiViewModel.Factory(sirkulasiRepository, authRepository)
     )
 
     val laporanViewModel: LaporanViewModel = viewModel(
@@ -85,11 +88,18 @@ fun MainScaffoldScreen(
 
     var currentTab by remember { mutableStateOf(BottomNavTab.DASHBOARD) }
 
+    androidx.compose.runtime.LaunchedEffect(isStaff, currentTab) {
+        if (!isStaff && currentTab == BottomNavTab.LAPORAN) {
+            currentTab = BottomNavTab.DASHBOARD
+        }
+    }
+
     Scaffold(
         bottomBar = {
             BottomNavBar(
                 currentTab = currentTab,
-                onTabSelected = { currentTab = it }
+                onTabSelected = { currentTab = it },
+                isStaff = isStaff
             )
         },
         containerColor = Surface,
@@ -113,6 +123,9 @@ fun MainScaffoldScreen(
                 BottomNavTab.KATALOG -> {
                     KatalogScreen(
                         viewModel = katalogViewModel,
+                        isStaff = isStaff,
+                        currentBorrowerName = loggedInAdmin?.namaLengkap ?: "",
+                        currentBorrowerId = loggedInAdmin?.nipPetugas ?: "",
                         modifier = Modifier.fillMaxSize()
                     )
                 }

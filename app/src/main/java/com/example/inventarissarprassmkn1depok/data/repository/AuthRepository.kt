@@ -3,6 +3,12 @@ package com.example.inventarissarprassmkn1depok.data.repository
 import com.example.inventarissarprassmkn1depok.data.local.dao.AdminDao
 import com.example.inventarissarprassmkn1depok.data.local.entity.AdminEntity
 
+enum class UserRole {
+    STAFF,
+    GURU,
+    SISWA
+}
+
 class AuthRepository(private val adminDao: AdminDao) {
 
     companion object {
@@ -100,6 +106,21 @@ class AuthRepository(private val adminDao: AdminDao) {
     }
 
     fun getLoggedInAdmin(): AdminEntity? = currentAdmin
+
+    fun getCurrentUserRole(): UserRole {
+        val admin = currentAdmin ?: return UserRole.STAFF
+        return when {
+            admin.username.equals("admin", ignoreCase = true) || admin.nipPetugas.startsWith("1985") -> UserRole.STAFF
+            admin.username.equals("toolman", ignoreCase = true) || admin.nipPetugas.startsWith("1992") -> UserRole.STAFF
+            admin.username.equals("guru", ignoreCase = true) || admin.nipPetugas.startsWith("1979") -> UserRole.GURU
+            admin.username.equals("siswa", ignoreCase = true) || admin.nipPetugas == "22231045" -> UserRole.SISWA
+            else -> UserRole.STAFF
+        }
+    }
+
+    fun isStaff(): Boolean = getCurrentUserRole() == UserRole.STAFF
+
+    fun isBorrower(): Boolean = !isStaff()
 
     fun logout() {
         currentAdmin = null

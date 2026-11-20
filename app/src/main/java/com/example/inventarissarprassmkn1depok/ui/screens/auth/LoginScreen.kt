@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -123,14 +124,23 @@ fun LoginScreen(
                 .padding(horizontal = 16.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 1. Top Institutional Branding (Stitch Screen 2)
-            Image(
-                painter = painterResource(id = R.drawable.ic_logo_smkn1depok),
-                contentDescription = "Logo SMKN 1 Depok",
+            // 1. Top Institutional Branding (Stitch Screen 2 with White Badge)
+            Box(
                 modifier = Modifier
-                    .size(80.dp)
-                    .padding(bottom = 12.dp)
-            )
+                    .size(88.dp)
+                    .clip(CircleShape)
+                    .background(Color.White)
+                    .border(BorderStroke(1.dp, CardBorder), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_logo_smkn1depok),
+                    contentDescription = "Logo SMKN 1 Depok",
+                    modifier = Modifier.size(62.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             Text(
                 text = "Masuk ke Akun",

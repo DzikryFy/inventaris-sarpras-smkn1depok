@@ -77,6 +77,10 @@ fun FormPeminjamanBottomSheet(
     barangList: List<BarangWithKategori>,
     preselectedBarang: BarangWithKategori?,
     sheetState: SheetState,
+    isStaff: Boolean = true,
+    defaultNomorIdentitas: String = "",
+    defaultNamaPeminjam: String = "",
+    defaultTipePeminjam: String = "Siswa",
     onDismiss: () -> Unit,
     onSubmit: (
         nomorIdentitas: String,
@@ -89,9 +93,9 @@ fun FormPeminjamanBottomSheet(
     ) -> Unit
 ) {
     val tipeOptions = listOf("Guru", "Siswa", "OSIS")
-    var selectedTipe by remember { mutableStateOf("Siswa") }
-    var nomorIdentitas by remember { mutableStateOf("") }
-    var namaPeminjam by remember { mutableStateOf("") }
+    var selectedTipe by remember { mutableStateOf(if (!isStaff) defaultTipePeminjam else "Siswa") }
+    var nomorIdentitas by remember { mutableStateOf(if (!isStaff) defaultNomorIdentitas else "") }
+    var namaPeminjam by remember { mutableStateOf(if (!isStaff) defaultNamaPeminjam else "") }
 
     var selectedBarang by remember {
         mutableStateOf(preselectedBarang ?: barangList.firstOrNull { it.stokTersedia > 0 })
@@ -187,40 +191,57 @@ fun FormPeminjamanBottomSheet(
                 }
             }
 
-            // 1. Tipe Peminjam (Segmented Chips)
+            // 1. Tipe Peminjam (Segmented Chips atau Informasi Terkunci)
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    text = "Tipe Peminjam:",
+                    text = if (isStaff) "Tipe Peminjam:" else "Tipe Akun (Terkunci Sesuai Sesi):",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = OnSurface
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    tipeOptions.forEach { tipe ->
-                        val isSelected = selectedTipe == tipe
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(if (isSelected) Secondary else SurfaceContainerLow)
-                                .border(
-                                    BorderStroke(1.dp, if (isSelected) Secondary else CardBorder),
-                                    RoundedCornerShape(10.dp)
+                if (isStaff) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        tipeOptions.forEach { tipe ->
+                            val isSelected = selectedTipe == tipe
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(if (isSelected) Secondary else SurfaceContainerLow)
+                                    .border(
+                                        BorderStroke(1.dp, if (isSelected) Secondary else CardBorder),
+                                        RoundedCornerShape(10.dp)
+                                    )
+                                    .clickable { selectedTipe = tipe }
+                                    .padding(vertical = 10.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = tipe,
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) Color.White else OnSurface
                                 )
-                                .clickable { selectedTipe = tipe }
-                                .padding(vertical = 10.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = tipe,
-                                fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color.White else OnSurface
-                            )
+                            }
                         }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(SurfaceContainerLow, RoundedCornerShape(10.dp))
+                            .border(BorderStroke(1.dp, CardBorder), RoundedCornerShape(10.dp))
+                            .padding(horizontal = 14.dp, vertical = 10.dp)
+                    ) {
+                        Text(
+                            text = "Kategori Peminjam: $defaultTipePeminjam",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Secondary
+                        )
                     }
                 }
             }
@@ -232,7 +253,8 @@ fun FormPeminjamanBottomSheet(
             ) {
                 OutlinedTextField(
                     value = nomorIdentitas,
-                    onValueChange = { nomorIdentitas = it },
+                    onValueChange = { if (isStaff) nomorIdentitas = it },
+                    readOnly = !isStaff,
                     label = { Text(if (selectedTipe == "Guru") "NIP / Kode Guru" else "NIS / ID Siswa") },
                     placeholder = { Text(if (selectedTipe == "Guru") "198507..." else "212210...") },
                     modifier = Modifier.weight(1f),
@@ -251,7 +273,8 @@ fun FormPeminjamanBottomSheet(
 
                 OutlinedTextField(
                     value = namaPeminjam,
-                    onValueChange = { namaPeminjam = it },
+                    onValueChange = { if (isStaff) namaPeminjam = it },
+                    readOnly = !isStaff,
                     label = { Text("Nama Lengkap") },
                     placeholder = { Text("Nama Peminjam / Kelas") },
                     modifier = Modifier.weight(1.3f),

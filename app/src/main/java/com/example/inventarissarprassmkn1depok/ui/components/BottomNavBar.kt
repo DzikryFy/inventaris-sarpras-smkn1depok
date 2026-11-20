@@ -52,8 +52,17 @@ enum class BottomNavTab(
 fun BottomNavBar(
     currentTab: BottomNavTab,
     onTabSelected: (BottomNavTab) -> Unit,
+    isStaff: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+    val visibleTabs = remember(isStaff) {
+        if (isStaff) {
+            BottomNavTab.values().toList()
+        } else {
+            BottomNavTab.values().filter { it != BottomNavTab.LAPORAN }
+        }
+    }
+
     // Solid White container with 1px top border (Anti-AI Slop M3 token)
     Box(
         modifier = modifier
@@ -70,7 +79,7 @@ fun BottomNavBar(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BottomNavTab.values().forEach { tab ->
+            visibleTabs.forEach { tab ->
                 val isSelected = tab == currentTab
                 val interactionSource = remember { MutableInteractionSource() }
 

@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.inventarissarprassmkn1depok.data.local.entity.PeminjamanEntity
 import com.example.inventarissarprassmkn1depok.data.local.model.BarangWithKategori
 import com.example.inventarissarprassmkn1depok.data.local.model.PeminjamanDetail
+import com.example.inventarissarprassmkn1depok.data.repository.AuthRepository
 import com.example.inventarissarprassmkn1depok.data.repository.SirkulasiRepository
+import com.example.inventarissarprassmkn1depok.data.repository.UserRole
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -36,13 +38,18 @@ data class SirkulasiUiState(
     val isFormOpen: Boolean = false,
     val selectedLoanForReturn: PeminjamanDetail? = null,
     val preselectedBarang: BarangWithKategori? = null,
+    val isStaff: Boolean = true,
+    val currentBorrowerName: String = "",
+    val currentBorrowerId: String = "",
+    val currentBorrowerTipe: String = "Siswa",
     val isLoading: Boolean = false,
     val message: String? = null,
     val errorMessage: String? = null
 )
 
 class SirkulasiViewModel(
-    private val sirkulasiRepository: SirkulasiRepository
+    private val sirkulasiRepository: SirkulasiRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _selectedTab = MutableStateFlow(SirkulasiTab.AKTIF)
@@ -84,9 +91,26 @@ class SirkulasiViewModel(
         @Suppress("UNCHECKED_CAST")
         val allBarang = params[10] as List<BarangWithKategori>
 
+        val isStaff = authRepository.isStaff()
+        val admin = authRepository.getLoggedInAdmin()
+        val borrowerNip = admin?.nipPetugas ?: ""
+        val borrowerName = admin?.namaLengkap ?: ""
+        val borrowerUsername = admin?.username ?: ""
+        val userRole = authRepository.getCurrentUserRole()
+        val borrowerType = when (userRole) {
+            UserRole.GURU -> "Guru"
+            UserRole.SISWA -> "Siswa"
+            else -> "Siswa"
+        }
+
         val query = searchQuery.trim().lowercase()
 
         val filteredActive = rawActive.filter { loan ->
+            val matchRole = isStaff ||
+                    loan.nomorIdentitas == borrowerNip ||
+                    (borrowerName.isNotBlank() && loan.namaPeminjam.contains(borrowerName, ignoreCase = true)) ||
+                    (borrowerUsername.isNotBlank() && loan.namaPeminjam.contains(borrowerUsername, ignoreCase = true))
+
             val matchQuery = query.isEmpty() ||
                     loan.namaPeminjam.lowercase().contains(query) ||
                     loan.nomorIdentitas.lowercase().contains(query) ||
@@ -97,10 +121,15 @@ class SirkulasiViewModel(
             val matchTipe = selectedTipeFilter == null ||
                     loan.tipePeminjam.equals(selectedTipeFilter, ignoreCase = true)
 
-            matchQuery && matchTipe
+            matchRole && matchQuery && matchTipe
         }
 
         val filteredCompleted = rawCompleted.filter { loan ->
+            val matchRole = isStaff ||
+                    loan.nomorIdentitas == borrowerNip ||
+                    (borrowerName.isNotBlank() && loan.namaPeminjam.contains(borrowerName, ignoreCase = true)) ||
+                    (borrowerUsername.isNotBlank() && loan.namaPeminjam.contains(borrowerUsername, ignoreCase = true))
+
             val matchQuery = query.isEmpty() ||
                     loan.namaPeminjam.lowercase().contains(query) ||
                     loan.nomorIdentitas.lowercase().contains(query) ||
@@ -110,21 +139,25 @@ class SirkulasiViewModel(
             val matchTipe = selectedTipeFilter == null ||
                     loan.tipePeminjam.equals(selectedTipeFilter, ignoreCase = true)
 
-            matchQuery && matchTipe
+            matchRole && matchQuery && matchTipe
         }
 
         SirkulasiUiState(
             selectedTab = selectedTab,
             activeLoans = filteredActive,
             completedLoans = filteredCompleted,
-            rawActiveCount = rawActive.size,
-            rawCompletedCount = rawCompleted.size,
+            rawActiveCount = filteredActive.size,
+            rawCompletedCount = filteredCompleted.size,
             allBarang = allBarang,
             searchQuery = searchQuery,
             selectedTipeFilter = selectedTipeFilter,
             isFormOpen = isFormOpen,
             selectedLoanForReturn = selectedLoanForReturn,
             preselectedBarang = preselectedBarang,
+            isStaff = isStaff,
+            currentBorrowerName = borrowerName,
+            currentBorrowerId = borrowerNip,
+            currentBorrowerTipe = borrowerType,
             isLoading = false,
             message = message,
             errorMessage = errorMessage
@@ -252,12 +285,13 @@ class SirkulasiViewModel(
     }
 
     class Factory(
-        private val sirkulasiRepository: SirkulasiRepository
+        private val sirkulasiRepository: SirkulasiRepository,
+        private val authRepository: AuthRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(SirkulasiViewModel::class.java)) {
-                return SirkulasiViewModel(sirkulasiRepository) as T
+                return SirkulasiViewModel(sirkulasiRepository, authRepository) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }

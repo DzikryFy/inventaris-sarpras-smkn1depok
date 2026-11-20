@@ -97,6 +97,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun KatalogScreen(
     viewModel: KatalogViewModel,
+    isStaff: Boolean = true,
+    currentBorrowerName: String = "",
+    currentBorrowerId: String = "",
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -128,31 +131,34 @@ fun KatalogScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Surface,
         floatingActionButton = {
-            // Extended Floating Action Button (Stitch Screen 4)
-            ExtendedFloatingActionButton(
-                onClick = {
-                    if (uiState.barangList.isNotEmpty()) {
-                        selectedItemForLoan = uiState.barangList.firstOrNull { it.stokTersedia > 0 }
-                    }
-                },
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Pinjamkan",
-                        tint = Color.White
-                    )
-                },
-                text = {
-                    Text(
-                        text = "Pinjamkan Barang",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                },
-                containerColor = PrimaryContainer,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
+            if (isStaff) {
+                // Extended Floating Action Button (Stitch Screen 4)
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        if (uiState.barangList.isNotEmpty()) {
+                            selectedItemForLoan = uiState.barangList.firstOrNull { it.stokTersedia > 0 }
+                            borrowerName = ""
+                        }
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Pinjamkan",
+                            tint = Color.White
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = "Pinjamkan Barang",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    },
+                    containerColor = PrimaryContainer,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
         },
         modifier = modifier.fillMaxSize()
     ) { innerPadding ->
@@ -207,16 +213,18 @@ fun KatalogScreen(
                             )
                         }
 
-                        Button(
-                            onClick = { viewModel.openCreateBarang() },
-                            colors = ButtonDefaults.buttonColors(containerColor = Secondary),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.height(32.dp),
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp)
-                        ) {
-                            Icon(imageVector = Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("+ Aset Baru", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        if (isStaff) {
+                            Button(
+                                onClick = { viewModel.openCreateBarang() },
+                                colors = ButtonDefaults.buttonColors(containerColor = Secondary),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(32.dp),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp)
+                            ) {
+                                Icon(imageVector = Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("+ Aset Baru", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }
@@ -593,32 +601,37 @@ fun KatalogScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
-                                    IconButton(
-                                        onClick = { viewModel.openEditBarang(item) },
-                                        modifier = Modifier.size(36.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Edit,
-                                            contentDescription = "Edit Data Barang",
-                                            tint = Secondary,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
+                                    if (isStaff) {
+                                        IconButton(
+                                            onClick = { viewModel.openEditBarang(item) },
+                                            modifier = Modifier.size(36.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Edit,
+                                                contentDescription = "Edit Data Barang",
+                                                tint = Secondary,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
 
-                                    IconButton(
-                                        onClick = { viewModel.requestDeleteBarang(item) },
-                                        modifier = Modifier.size(36.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Delete,
-                                            contentDescription = "Hapus Barang",
-                                            tint = Color(0xFFBA1A1A),
-                                            modifier = Modifier.size(18.dp)
-                                        )
+                                        IconButton(
+                                            onClick = { viewModel.requestDeleteBarang(item) },
+                                            modifier = Modifier.size(36.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = "Hapus Barang",
+                                                tint = Color(0xFFBA1A1A),
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
                                     }
 
                                     Button(
-                                        onClick = { selectedItemForLoan = item },
+                                        onClick = {
+                                            selectedItemForLoan = item
+                                            borrowerName = if (!isStaff) currentBorrowerName else ""
+                                        },
                                         enabled = isAvailable,
                                         modifier = Modifier.height(38.dp),
                                         shape = RoundedCornerShape(10.dp),
@@ -702,14 +715,15 @@ fun KatalogScreen(
                 // Input Nama Peminjam
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = "Nama Peminjam / NIS / NIP:",
+                        text = if (!isStaff) "Identitas Peminjam (Terkunci Sesuai Akun):" else "Nama Peminjam / NIS / NIP:",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = OnSurfaceVariant
                     )
                     OutlinedTextField(
-                        value = borrowerName,
-                        onValueChange = { borrowerName = it },
+                        value = if (!isStaff) currentBorrowerName else borrowerName,
+                        onValueChange = { if (isStaff) borrowerName = it },
+                        readOnly = !isStaff,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
@@ -783,10 +797,10 @@ fun KatalogScreen(
 
                 Button(
                     onClick = {
-                        val name = borrowerName.trim()
+                        val name = (if (!isStaff) currentBorrowerName else borrowerName).trim()
                         if (name.isNotEmpty()) {
                             scope.launch {
-                                snackbarHostState.showSnackbar("Peminjaman '${barang.namaBarang}' untuk '$name' berhasil dicatat!")
+                                snackbarHostState.showSnackbar("Peminjaman '${barang.namaBarang}' untuk '$name' berhasil diajukan!")
                             }
                             selectedItemForLoan = null
                             borrowerName = ""

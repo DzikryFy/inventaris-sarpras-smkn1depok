@@ -412,6 +412,7 @@ fun SirkulasiScreen(
                     ) { loan ->
                         PeminjamanItemCard(
                             loan = loan,
+                            isStaff = uiState.isStaff,
                             isHistory = uiState.selectedTab == SirkulasiTab.RIWAYAT,
                             todayDate = todayDateStr,
                             onReturnClick = { viewModel.openReturnSheet(loan) }
@@ -449,6 +450,10 @@ fun SirkulasiScreen(
             barangList = uiState.allBarang,
             preselectedBarang = uiState.preselectedBarang,
             sheetState = formSheetState,
+            isStaff = uiState.isStaff,
+            defaultNomorIdentitas = uiState.currentBorrowerId,
+            defaultNamaPeminjam = uiState.currentBorrowerName,
+            defaultTipePeminjam = uiState.currentBorrowerTipe,
             onDismiss = { viewModel.closeForm() },
             onSubmit = { nomorIdentitas, namaPeminjam, tipePeminjam, idBarang, jumlahPinjam, batasKembali, keperluan ->
                 viewModel.submitPeminjaman(
@@ -468,6 +473,7 @@ fun SirkulasiScreen(
 @Composable
 private fun PeminjamanItemCard(
     loan: PeminjamanDetail,
+    isStaff: Boolean,
     isHistory: Boolean,
     todayDate: String,
     onReturnClick: () -> Unit
@@ -687,17 +693,33 @@ private fun PeminjamanItemCard(
 
                 // Tombol Aksi Terima Kembali jika aktif
                 if (!isHistory) {
-                    Button(
-                        onClick = onReturnClick,
-                        colors = ButtonDefaults.buttonColors(containerColor = Secondary),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.height(36.dp)
-                    ) {
-                        Text(
-                            text = "TERIMA KEMBALI",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                    if (isStaff) {
+                        Button(
+                            onClick = onReturnClick,
+                            colors = ButtonDefaults.buttonColors(containerColor = Secondary),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text(
+                                text = "TERIMA KEMBALI",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .background(SurfaceContainerLow, RoundedCornerShape(8.dp))
+                                .border(BorderStroke(1.dp, CardBorder), RoundedCornerShape(8.dp))
+                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "Kembalikan ke Loket Sarpras",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = OnSurfaceVariant
+                            )
+                        }
                     }
                 }
             }

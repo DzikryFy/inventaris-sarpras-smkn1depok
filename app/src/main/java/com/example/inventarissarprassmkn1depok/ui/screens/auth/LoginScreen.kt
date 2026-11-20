@@ -332,9 +332,9 @@ fun LoginScreen(
 
                         Text(
                             text = if (uiState.selectedRole == RoleType.STAFF)
-                                "Gunakan NIP staf sarpras atau username 'admin'."
+                                "Demo: admin / admin123 (Sarpras) atau toolman / toolman123 (Lab)"
                             else
-                                "Gunakan NIP guru atau NIS siswa terdaftar di Dapodik.",
+                                "Demo: 22231045 / siswa-pplg-smkn1 (Siswa) atau 197903122005011003 / guru123 (Guru)",
                             fontSize = 11.sp,
                             color = OnSurfaceVariant
                         )

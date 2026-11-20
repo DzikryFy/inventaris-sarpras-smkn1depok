@@ -69,6 +69,63 @@ abstract class AppDatabase : RoomDatabase() {
                     }
                 }
             }
+
+            override fun onOpen(db: SupportSQLiteDatabase) {
+                super.onOpen(db)
+                INSTANCE?.let { database ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        ensureDemoAccounts(database)
+                    }
+                }
+            }
+        }
+
+        suspend fun ensureDemoAccounts(database: AppDatabase) {
+            val adminDao = database.adminDao()
+            val demoAccounts = listOf(
+                AdminEntity(
+                    idAdmin = 1,
+                    nipPetugas = "198507152010011002",
+                    username = "admin",
+                    password = "admin123",
+                    namaLengkap = "Petugas Sarpras SMKN 1 Depok",
+                    kontak = "081234567890"
+                ),
+                AdminEntity(
+                    idAdmin = 2,
+                    nipPetugas = "22231045",
+                    username = "siswa",
+                    password = "siswa-pplg-smkn1",
+                    namaLengkap = "Rizky Pratama (Siswa XII PPLG 2)",
+                    kontak = "085712345678"
+                ),
+                AdminEntity(
+                    idAdmin = 3,
+                    nipPetugas = "197903122005011003",
+                    username = "guru",
+                    password = "guru123",
+                    namaLengkap = "Dra. Sri Wahyuni, M.Pd (Guru Produktif PPLG)",
+                    kontak = "081398765432"
+                ),
+                AdminEntity(
+                    idAdmin = 4,
+                    nipPetugas = "199204182019031008",
+                    username = "toolman",
+                    password = "toolman123",
+                    namaLengkap = "Ahmad Fauzi (Toolman Lab Komputer)",
+                    kontak = "089612345678"
+                )
+            )
+
+            demoAccounts.forEach { acc ->
+                val existing = adminDao.getAdminByUsername(acc.username)
+                    ?: adminDao.getAdminByNip(acc.nipPetugas)
+                if (existing == null) {
+                    try {
+                        adminDao.insertAdmin(acc)
+                    } catch (_: Exception) {}
+                }
+            }
         }
 
         suspend fun seedDatabase(database: AppDatabase) {
@@ -77,17 +134,8 @@ abstract class AppDatabase : RoomDatabase() {
             val barangDao = database.barangDao()
             val peminjamanDao = database.peminjamanDao()
 
-            // 1. Seed Admin Default
-            adminDao.insertAdmin(
-                AdminEntity(
-                    idAdmin = 1,
-                    nipPetugas = "198507152010011002",
-                    username = "admin",
-                    password = "admin123",
-                    namaLengkap = "Petugas Sarpras SMKN 1 Depok",
-                    kontak = "081234567890"
-                )
-            )
+            // 1. Seed Semua Akun Resmi (Admin, Siswa, Guru, Toolman)
+            ensureDemoAccounts(database)
 
             // 2. Seed Kategori (Sesuai spesifikasi proyek)
             val kategoriList = listOf(

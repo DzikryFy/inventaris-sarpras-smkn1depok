@@ -64,18 +64,20 @@ class AuthViewModel(
 
     fun fillDemoCredentials() {
         if (_uiState.value.selectedRole == RoleType.STAFF) {
+            val isCurrentAdmin = _uiState.value.identifier == "admin"
             _uiState.update {
                 it.copy(
-                    identifier = "admin",
-                    password = "admin123",
+                    identifier = if (isCurrentAdmin) "toolman" else "admin",
+                    password = if (isCurrentAdmin) "toolman123" else "admin123",
                     errorMessage = null
                 )
             }
         } else {
+            val isCurrentSiswa = _uiState.value.identifier == "22231045"
             _uiState.update {
                 it.copy(
-                    identifier = "22231045",
-                    password = "siswa-pplg-smkn1",
+                    identifier = if (isCurrentSiswa) "197903122005011003" else "22231045",
+                    password = if (isCurrentSiswa) "guru123" else "siswa-pplg-smkn1",
                     errorMessage = null
                 )
             }

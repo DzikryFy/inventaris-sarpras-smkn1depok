@@ -22,12 +22,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddBusiness
 import androidx.compose.material.icons.filled.AddTask
 import androidx.compose.material.icons.filled.AllInclusive
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Cable
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.QrCodeScanner
@@ -35,6 +38,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SportsBasketball
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -50,6 +54,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -103,6 +108,21 @@ fun KatalogScreen(
     var purpose by remember { mutableStateOf("Praktikum KBM") }
     var loanQty by remember { mutableStateOf("1") }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val formSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    androidx.compose.runtime.LaunchedEffect(uiState.message) {
+        uiState.message?.let { msg ->
+            snackbarHostState.showSnackbar(msg)
+            viewModel.clearMessage()
+        }
+    }
+
+    androidx.compose.runtime.LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { error ->
+            snackbarHostState.showSnackbar("Error: $error")
+            viewModel.clearMessage()
+        }
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -171,24 +191,33 @@ fun KatalogScreen(
                     }
 
                     Row(
-                        modifier = Modifier
-                            .background(SurfaceContainerHigh, RoundedCornerShape(9999.dp))
-                            .padding(horizontal = 10.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.VerifiedUser,
-                            contentDescription = null,
-                            tint = Secondary,
-                            modifier = Modifier.size(13.dp)
-                        )
-                        Text(
-                            text = "Aktif ${uiState.totalCount} Aset",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = OnSurface
-                        )
+                        Box(
+                            modifier = Modifier
+                                .background(SurfaceContainerHigh, RoundedCornerShape(9999.dp))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "${uiState.totalCount} Aset",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = OnSurface
+                            )
+                        }
+
+                        Button(
+                            onClick = { viewModel.openCreateBarang() },
+                            colors = ButtonDefaults.buttonColors(containerColor = Secondary),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(32.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp)
+                        ) {
+                            Icon(imageVector = Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("+ Aset Baru", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
@@ -557,28 +586,57 @@ fun KatalogScreen(
                                     )
                                 }
 
-                                Button(
-                                    onClick = { selectedItemForLoan = item },
-                                    enabled = isAvailable,
-                                    modifier = Modifier.height(40.dp),
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Secondary,
-                                        contentColor = Color.White,
-                                        disabledContainerColor = SurfaceContainerHigh
-                                    )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.AddTask,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(15.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = if (isAvailable) "Ajukan Pinjam" else "Stok Kosong",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
+                                    IconButton(
+                                        onClick = { viewModel.openEditBarang(item) },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Edit Data Barang",
+                                            tint = Secondary,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+
+                                    IconButton(
+                                        onClick = { viewModel.requestDeleteBarang(item) },
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Hapus Barang",
+                                            tint = Color(0xFFBA1A1A),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+
+                                    Button(
+                                        onClick = { selectedItemForLoan = item },
+                                        enabled = isAvailable,
+                                        modifier = Modifier.height(38.dp),
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Secondary,
+                                            contentColor = Color.White,
+                                            disabledContainerColor = SurfaceContainerHigh
+                                        )
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.AddTask,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(15.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = if (isAvailable) "Pinjam" else "Kosong",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -744,5 +802,58 @@ fun KatalogScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
+    }
+
+    // Sheet Form Tambah / Edit Master Barang
+    if (uiState.isFormOpen) {
+        FormBarangBottomSheet(
+            barangToEdit = uiState.barangToEdit,
+            kategoriList = uiState.categories,
+            sheetState = formSheetState,
+            onDismiss = { viewModel.closeForm() },
+            onSubmit = { barangEntity ->
+                viewModel.saveBarang(barangEntity)
+            }
+        )
+    }
+
+    // Dialog Konfirmasi Hapus Data Barang
+    uiState.barangToDelete?.let { target ->
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelDeleteBarang() },
+            title = {
+                Text(
+                    text = "Hapus Aset Inventaris?",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = OnSurface
+                )
+            },
+            text = {
+                Text(
+                    text = "Apakah Anda yakin ingin menghapus '${target.namaBarang}' (${target.kodeBarang}) dari basis data? Tindakan ini tidak dapat dibatalkan.",
+                    fontSize = 13.sp,
+                    color = OnSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.confirmDeleteBarang() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFBA1A1A)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Ya, Hapus", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { viewModel.cancelDeleteBarang() }
+                ) {
+                    Text("Batal", fontSize = 13.sp, color = OnSurfaceVariant)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 }

@@ -4,6 +4,7 @@ import com.example.inventarissarprassmkn1depok.data.local.dao.BarangDao
 import com.example.inventarissarprassmkn1depok.data.local.dao.DashboardDao
 import com.example.inventarissarprassmkn1depok.data.local.dao.KategoriDao
 import com.example.inventarissarprassmkn1depok.data.local.dao.PeminjamanDao
+import com.example.inventarissarprassmkn1depok.data.local.entity.BarangEntity
 import com.example.inventarissarprassmkn1depok.data.local.entity.KategoriEntity
 import com.example.inventarissarprassmkn1depok.data.local.entity.PeminjamanEntity
 import com.example.inventarissarprassmkn1depok.data.local.model.BarangWithKategori
@@ -63,4 +64,58 @@ class SarprasRepository(
         catatanTambahan = catatan,
         barangDao = barangDao
     )
+
+    // 5. CRUD Master Barang
+    suspend fun tambahBarang(barang: BarangEntity): Result<Unit> {
+        return try {
+            val existing = barangDao.getBarangByKode(barang.kodeBarang)
+            if (existing != null) {
+                return Result.failure(
+                    IllegalArgumentException("Kode barang '${barang.kodeBarang}' sudah terdaftar dalam sistem.")
+                )
+            }
+            barangDao.insertBarang(barang)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateBarang(barang: BarangEntity): Result<Unit> {
+        return try {
+            val existing = barangDao.getBarangById(barang.idBarang)
+                ?: return Result.failure(IllegalArgumentException("Barang dengan ID ${barang.idBarang} tidak ditemukan."))
+
+            // Jika stok total berubah, sesuaikan selisih ke stok_tersedia dengan aman
+            val diff = barang.stokTotal - existing.stokTotal
+            val newStokTersedia = (existing.stokTersedia + diff).coerceIn(0, barang.stokTotal)
+
+            val updatedBarang = barang.copy(stokTersedia = newStokTersedia)
+            barangDao.updateBarang(updatedBarang)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun hapusBarang(idBarang: Int): Result<Unit> {
+        return try {
+            val barang = barangDao.getBarangById(idBarang)
+                ?: return Result.failure(IllegalArgumentException("Barang tidak ditemukan."))
+
+            val activeLoans = peminjamanDao.countActiveLoansByBarang(idBarang)
+            if (activeLoans > 0) {
+                return Result.failure(
+                    IllegalStateException(
+                        "Barang '${barang.namaBarang}' masih tercatat dalam $activeLoans transaksi peminjaman aktif. Silakan proses pengembalian terlebih dahulu sebelum menghapus data aset."
+                    )
+                )
+            }
+
+            barangDao.deleteBarang(barang)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

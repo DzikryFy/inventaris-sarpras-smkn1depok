@@ -8,6 +8,8 @@ import androidx.room.Query
 import androidx.room.Update
 import com.example.inventarissarprassmkn1depok.data.local.entity.BarangEntity
 import com.example.inventarissarprassmkn1depok.data.local.model.BarangWithKategori
+import com.example.inventarissarprassmkn1depok.data.local.model.KategoriSirkulasiStat
+import com.example.inventarissarprassmkn1depok.data.local.model.LokasiDistribusi
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -92,4 +94,26 @@ interface BarangDao {
 
     @Query("SELECT COUNT(*) FROM barang_sarpras")
     suspend fun getBarangCount(): Int
+
+    @Query("""
+        SELECT lokasi_simpan AS lokasiSimpan, 
+               COALESCE(SUM(stok_total), 0) AS totalUnit, 
+               COUNT(*) AS itemJenisCount 
+        FROM barang_sarpras 
+        GROUP BY lokasi_simpan 
+        ORDER BY totalUnit DESC
+    """)
+    fun getDistribusiLokasi(): Flow<List<LokasiDistribusi>>
+
+    @Query("""
+        SELECT k.nama_kategori AS namaKategori, 
+               COALESCE(SUM(p.jumlah_pinjam), 0) AS totalDipinjam, 
+               COUNT(DISTINCT b.id_barang) AS totalItem
+        FROM kategori k
+        LEFT JOIN barang_sarpras b ON k.id_kategori = b.id_kategori_fk
+        LEFT JOIN peminjaman_sarpras p ON b.id_barang = p.id_barang_fk
+        GROUP BY k.id_kategori
+        ORDER BY totalDipinjam DESC
+    """)
+    fun getStatistikKategori(): Flow<List<KategoriSirkulasiStat>>
 }

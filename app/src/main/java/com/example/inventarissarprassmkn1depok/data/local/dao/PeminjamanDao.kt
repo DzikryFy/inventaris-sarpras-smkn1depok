@@ -97,6 +97,9 @@ interface PeminjamanDao {
     @Query("SELECT COUNT(*) FROM peminjaman_sarpras")
     suspend fun getPeminjamanCount(): Int
 
+    @Query("SELECT COUNT(*) FROM peminjaman_sarpras WHERE id_barang_fk = :idBarang AND status = 'Dipinjam'")
+    suspend fun countActiveLoansByBarang(idBarang: Int): Int
+
     @Transaction
     suspend fun pinjamBarang(peminjaman: PeminjamanEntity, barangDao: BarangDao): Boolean {
         val barang = barangDao.getBarangById(peminjaman.idBarangFk) ?: return false

@@ -52,19 +52,19 @@ private val DarkColorScheme = darkColorScheme(
     onSecondary = OnSecondary,
     secondaryContainer = SecondaryContainer,
     onSecondaryContainer = OnSecondaryContainer,
-    background = Primary,
-    onBackground = Surface,
-    surface = PrimaryContainer,
-    onSurface = Surface,
-    surfaceVariant = Primary,
-    onSurfaceVariant = OutlineVariant,
-    outline = OutlineVariant,
-    outlineVariant = Outline
+    background = Surface,
+    onBackground = OnSurface,
+    surface = Surface,
+    onSurface = OnSurface,
+    surfaceVariant = SurfaceVariant,
+    onSurfaceVariant = OnSurfaceVariant,
+    outline = Outline,
+    outlineVariant = OutlineVariant
 )
 
 @Composable
 fun InventarisSarprasSMKN1DepokTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false, // Enforce crisp institutional light theme per DESIGN.md
     content: @Composable () -> Unit
 ) {
     // Disable dynamicColor to strictly preserve institutional brand identity
@@ -75,7 +75,7 @@ fun InventarisSarprasSMKN1DepokTheme(
         SideEffect {
             val window = (view.context as? Activity)?.window
             if (window != null) {
-                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
             }
         }
     }

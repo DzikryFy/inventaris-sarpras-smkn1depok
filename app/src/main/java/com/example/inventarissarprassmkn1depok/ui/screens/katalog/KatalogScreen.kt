@@ -261,6 +261,9 @@ fun KatalogScreen(
                             },
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = OnSurface,
+                                unfocusedTextColor = OnSurface,
+                                cursorColor = Secondary,
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
                                 focusedBorderColor = Color.Transparent,
@@ -713,6 +716,9 @@ fun KatalogScreen(
                         shape = RoundedCornerShape(10.dp),
                         placeholder = { Text("Contoh: Rizky Pratama (XII PPLG 2)", fontSize = 12.sp) },
                         colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = OnSurface,
+                            unfocusedTextColor = OnSurface,
+                            cursorColor = Secondary,
                             focusedContainerColor = SurfaceContainerLow,
                             unfocusedContainerColor = SurfaceContainerLow,
                             focusedBorderColor = Secondary,
@@ -737,6 +743,9 @@ fun KatalogScreen(
                             .height(50.dp),
                         shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = OnSurface,
+                            unfocusedTextColor = OnSurface,
+                            cursorColor = Secondary,
                             focusedContainerColor = SurfaceContainerLow,
                             unfocusedContainerColor = SurfaceContainerLow,
                             focusedBorderColor = Secondary,
@@ -761,6 +770,9 @@ fun KatalogScreen(
                             .height(50.dp),
                         shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = OnSurface,
+                            unfocusedTextColor = OnSurface,
+                            cursorColor = Secondary,
                             focusedContainerColor = SurfaceContainerLow,
                             unfocusedContainerColor = SurfaceContainerLow,
                             focusedBorderColor = Secondary,

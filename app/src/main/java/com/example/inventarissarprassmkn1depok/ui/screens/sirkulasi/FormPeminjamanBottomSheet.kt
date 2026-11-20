@@ -239,6 +239,9 @@ fun FormPeminjamanBottomSheet(
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = OnSurface,
+                        unfocusedTextColor = OnSurface,
+                        cursorColor = Secondary,
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = SurfaceContainerLow,
                         focusedBorderColor = Secondary,
@@ -255,6 +258,9 @@ fun FormPeminjamanBottomSheet(
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = OnSurface,
+                        unfocusedTextColor = OnSurface,
+                        cursorColor = Secondary,
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = SurfaceContainerLow,
                         focusedBorderColor = Secondary,
@@ -508,6 +514,9 @@ fun FormPeminjamanBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = OnSurface,
+                    unfocusedTextColor = OnSurface,
+                    cursorColor = Secondary,
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = SurfaceContainerLow,
                     focusedBorderColor = Secondary,
@@ -569,6 +578,9 @@ fun FormPeminjamanBottomSheet(
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = OnSurface,
+                        unfocusedTextColor = OnSurface,
+                        cursorColor = Secondary,
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = SurfaceContainerLow,
                         focusedBorderColor = Secondary,

@@ -45,6 +45,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -293,6 +294,11 @@ fun LoginScreen(
                                 .fillMaxWidth()
                                 .height(52.dp),
                             shape = RoundedCornerShape(12.dp),
+                            textStyle = LocalTextStyle.current.copy(
+                                color = OnSurface,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 14.sp
+                            ),
                             placeholder = {
                                 Text(
                                     text = if (uiState.selectedRole == RoleType.STAFF) "Contoh: 198507152010011002" else "Contoh: 22231045",
@@ -314,6 +320,9 @@ fun LoginScreen(
                                 imeAction = ImeAction.Next
                             ),
                             colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = OnSurface,
+                                unfocusedTextColor = OnSurface,
+                                cursorColor = Secondary,
                                 focusedContainerColor = SurfaceContainerLow,
                                 unfocusedContainerColor = SurfaceContainerLow,
                                 focusedBorderColor = Secondary,
@@ -364,6 +373,11 @@ fun LoginScreen(
                                 .fillMaxWidth()
                                 .height(52.dp),
                             shape = RoundedCornerShape(12.dp),
+                            textStyle = LocalTextStyle.current.copy(
+                                color = OnSurface,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 14.sp
+                            ),
                             placeholder = {
                                 Text(
                                     text = "Masukkan kata sandi akun",
@@ -402,6 +416,9 @@ fun LoginScreen(
                                 }
                             ),
                             colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = OnSurface,
+                                unfocusedTextColor = OnSurface,
+                                cursorColor = Secondary,
                                 focusedContainerColor = SurfaceContainerLow,
                                 unfocusedContainerColor = SurfaceContainerLow,
                                 focusedBorderColor = Secondary,

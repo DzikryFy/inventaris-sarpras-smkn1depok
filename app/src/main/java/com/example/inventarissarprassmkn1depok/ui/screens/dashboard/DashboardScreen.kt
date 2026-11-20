@@ -1146,6 +1146,9 @@ fun DashboardScreen(
                             )
                         },
                         colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = OnSurface,
+                            unfocusedTextColor = OnSurface,
+                            cursorColor = Secondary,
                             focusedContainerColor = SurfaceContainerLow,
                             unfocusedContainerColor = SurfaceContainerLow,
                             focusedBorderColor = Secondary,

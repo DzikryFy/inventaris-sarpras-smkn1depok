@@ -12,7 +12,7 @@ import com.example.inventarissarprassmkn1depok.data.local.AppDatabase
 import com.example.inventarissarprassmkn1depok.data.repository.AuthRepository
 import com.example.inventarissarprassmkn1depok.ui.screens.auth.AuthViewModel
 import com.example.inventarissarprassmkn1depok.ui.screens.auth.LoginScreen
-import com.example.inventarissarprassmkn1depok.ui.screens.dashboard.DashboardPlaceholderScreen
+import com.example.inventarissarprassmkn1depok.ui.screens.main.MainScaffoldScreen
 import com.example.inventarissarprassmkn1depok.ui.screens.splash.SplashScreen
 
 @Composable
@@ -54,10 +54,10 @@ fun AppNavHost(
             )
         }
 
-        // Screen 3: Dashboard (Placeholder untuk Langkah 2, persiapan Langkah 3 Bento Grid)
+        // Main App Scaffold (Dashboard Operasional, Katalog Sarpras, Sirkulasi, Laporan)
         composable(Screen.Dashboard.route) {
-            DashboardPlaceholderScreen(
-                admin = authRepository.getLoggedInAdmin(),
+            MainScaffoldScreen(
+                database = database,
                 onLogout = {
                     authRepository.logout()
                     navController.navigate(Screen.Login.route) {

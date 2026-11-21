@@ -446,6 +446,15 @@ fun FormBarangBottomSheet(
             Button(
                 onClick = {
                     if (isFormValid) {
+                        val isGoodCondition = kondisi.equals("Baik", ignoreCase = true)
+                        val initialStokTersedia = when {
+                            !isGoodCondition -> 0
+                            barangToEdit != null && !barangToEdit.kondisi.equals("Baik", ignoreCase = true) -> stokTotal
+                            barangToEdit != null && barangToEdit.stokTersedia == 0 -> stokTotal
+                            barangToEdit != null -> barangToEdit.stokTersedia
+                            else -> stokTotal
+                        }
+
                         val entity = BarangEntity(
                             idBarang = barangToEdit?.idBarang ?: 0,
                             idKategoriFk = selectedKategoriId,
@@ -453,7 +462,7 @@ fun FormBarangBottomSheet(
                             namaBarang = namaBarang.trim(),
                             merkSpesifikasi = merkSpesifikasi.trim(),
                             stokTotal = stokTotal,
-                            stokTersedia = barangToEdit?.stokTersedia ?: stokTotal,
+                            stokTersedia = initialStokTersedia,
                             kondisi = kondisi,
                             lokasiSimpan = lokasiSimpan.trim(),
                             sumberDana = sumberDana

@@ -11,7 +11,10 @@ import com.example.inventarissarprassmkn1depok.data.local.entity.PeminjamanEntit
 import com.example.inventarissarprassmkn1depok.data.local.model.BarangWithKategori
 import com.example.inventarissarprassmkn1depok.data.local.model.DashboardStats
 import com.example.inventarissarprassmkn1depok.data.local.model.PeminjamanDetail
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 class SarprasRepository(
     private val barangDao: BarangDao,
@@ -20,6 +23,14 @@ class SarprasRepository(
     private val dashboardDao: DashboardDao,
     private val adminDao: AdminDao? = null
 ) {
+    init {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                barangDao.autoSyncGoodConditionStock()
+            } catch (_: Exception) {}
+        }
+    }
+
     // 1. Dashboard Metrics & Active Loans
     fun getDashboardStats(): Flow<DashboardStats> = dashboardDao.getDashboardStats()
 
@@ -122,9 +133,36 @@ class SarprasRepository(
             val existing = barangDao.getBarangById(barang.idBarang)
                 ?: return Result.failure(IllegalArgumentException("Barang dengan ID ${barang.idBarang} tidak ditemukan."))
 
-            // Jika stok total berubah, sesuaikan selisih ke stok_tersedia dengan aman
-            val diff = barang.stokTotal - existing.stokTotal
-            val newStokTersedia = (existing.stokTersedia + diff).coerceIn(0, barang.stokTotal)
+            val activeBorrowedQty = peminjamanDao.getActiveBorrowedQtyByBarang(barang.idBarang)
+            val isBecomingGood = !existing.kondisi.equals("Baik", ignoreCase = true) &&
+                    barang.kondisi.equals("Baik", ignoreCase = true)
+
+            val newStokTersedia = when {
+                // 1. Jika kondisi diubah ke selain 'Baik' (misal 'Perlu Servis' / 'Rusak'): stok siap pinjam = 0
+                !barang.kondisi.equals("Baik", ignoreCase = true) -> 0
+
+                // 2. Jika kondisi dipulihkan dari servis/rusak menjadi 'Baik':
+                // Pulihkan stok siap pinjam ke kapasitas penuh dikurangi unit yang sedang aktif dipinjam
+                isBecomingGood -> {
+                    (barang.stokTotal - activeBorrowedQty).coerceIn(0, barang.stokTotal)
+                }
+
+                // 3. Jika kondisi 'Baik', namun stokTersedia sebelumnya 0 dan tidak ada yang meminjam aktif (anomali paska servis):
+                existing.stokTersedia == 0 && activeBorrowedQty == 0 && barang.kondisi.equals("Baik", ignoreCase = true) -> {
+                    barang.stokTotal
+                }
+
+                // 4. Jika stok total berubah: sesuaikan stokTersedia dengan selisih stok
+                barang.stokTotal != existing.stokTotal -> {
+                    val diff = barang.stokTotal - existing.stokTotal
+                    (existing.stokTersedia + diff).coerceIn(0, (barang.stokTotal - activeBorrowedQty).coerceAtLeast(0))
+                }
+
+                // 5. Normal: pertahankan stokTersedia dengan batas aman
+                else -> {
+                    existing.stokTersedia.coerceIn(0, (barang.stokTotal - activeBorrowedQty).coerceAtLeast(0))
+                }
+            }
 
             val updatedBarang = barang.copy(stokTersedia = newStokTersedia)
             barangDao.updateBarang(updatedBarang)

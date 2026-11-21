@@ -106,6 +106,23 @@ interface BarangDao {
     @Query("UPDATE barang_sarpras SET kondisi = :kondisi WHERE id_barang = :idBarang")
     suspend fun updateKondisiBarang(idBarang: Int, kondisi: String): Int
 
+    @Query("""
+        UPDATE barang_sarpras 
+        SET stok_tersedia = (stok_total - (
+            SELECT COALESCE(SUM(p.jumlah_pinjam), 0) 
+            FROM peminjaman_sarpras p 
+            WHERE p.id_barang_fk = barang_sarpras.id_barang AND p.status = 'Dipinjam'
+        ))
+        WHERE (kondisi = 'Baik' OR kondisi = 'baik') 
+          AND stok_tersedia = 0 
+          AND (
+              SELECT COALESCE(SUM(p2.jumlah_pinjam), 0) 
+              FROM peminjaman_sarpras p2 
+              WHERE p2.id_barang_fk = barang_sarpras.id_barang AND p2.status = 'Dipinjam'
+          ) < stok_total
+    """)
+    suspend fun autoSyncGoodConditionStock(): Int
+
     @Query("SELECT COUNT(*) FROM barang_sarpras")
     suspend fun getBarangCount(): Int
 

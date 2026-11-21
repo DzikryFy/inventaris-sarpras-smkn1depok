@@ -125,9 +125,11 @@ fun FormPeminjamanBottomSheet(
 
     val currentStok = selectedBarang?.stokTersedia ?: 0
     val isStokExceeded = qtyPinjam > currentStok
+    val isSelectedGood = selectedBarang?.kondisi?.equals("Baik", ignoreCase = true) == true
     val isFormValid = nomorIdentitas.isNotBlank() &&
             namaPeminjam.isNotBlank() &&
             selectedBarang != null &&
+            isSelectedGood &&
             currentStok > 0 &&
             !isStokExceeded &&
             keperluan.isNotBlank()
@@ -361,19 +363,24 @@ fun FormPeminjamanBottomSheet(
                                                 color = OnSurfaceVariant
                                             )
                                             Text(text = "•", fontSize = 10.sp, color = CardBorder)
+                                            val isSelectedGood = selectedBarang!!.kondisi.equals("Baik", ignoreCase = true)
                                             Box(
                                                 modifier = Modifier
                                                     .background(
-                                                        if (currentStok > 0) StatusAvailableBg else StatusDamagedBg,
+                                                        if (currentStok > 0 && isSelectedGood) StatusAvailableBg else StatusDamagedBg,
                                                         RoundedCornerShape(4.dp)
                                                     )
                                                     .padding(horizontal = 6.dp, vertical = 1.dp)
                                             ) {
                                                 Text(
-                                                    text = "Tersedia: $currentStok unit",
+                                                    text = when {
+                                                        !isSelectedGood -> "Perlu Servis"
+                                                        currentStok > 0 -> "Tersedia: $currentStok unit"
+                                                        else -> "Habis Dipinjam"
+                                                    },
                                                     fontSize = 10.sp,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = if (currentStok > 0) StatusAvailableText else StatusDamagedText
+                                                    color = if (currentStok > 0 && isSelectedGood) StatusAvailableText else StatusDamagedText
                                                 )
                                             }
                                         }
@@ -403,7 +410,10 @@ fun FormPeminjamanBottomSheet(
                             .background(Color.White)
                     ) {
                         barangList.forEach { barang ->
+                            val isItemGood = barang.kondisi.equals("Baik", ignoreCase = true)
+                            val isSelectable = isItemGood && barang.stokTersedia > 0
                             DropdownMenuItem(
+                                enabled = isSelectable,
                                 text = {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
@@ -428,7 +438,8 @@ fun FormPeminjamanBottomSheet(
                                             Text(
                                                 text = barang.namaBarang,
                                                 fontWeight = FontWeight.SemiBold,
-                                                fontSize = 13.sp
+                                                fontSize = 13.sp,
+                                                color = if (isSelectable) OnSurface else OnSurfaceVariant.copy(alpha = 0.5f)
                                             )
                                             Text(
                                                 text = "${barang.kodeBarang} • ${barang.namaKategori}",
@@ -440,26 +451,32 @@ fun FormPeminjamanBottomSheet(
                                         Box(
                                             modifier = Modifier
                                                 .background(
-                                                    if (barang.stokTersedia > 0) StatusAvailableBg else StatusDamagedBg,
+                                                    if (isSelectable) StatusAvailableBg else StatusDamagedBg,
                                                     RoundedCornerShape(4.dp)
                                                 )
                                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                                         ) {
                                             Text(
-                                                text = "Sisa: ${barang.stokTersedia}",
+                                                text = when {
+                                                    !isItemGood -> "Perlu Servis"
+                                                    barang.stokTersedia > 0 -> "Sisa: ${barang.stokTersedia}"
+                                                    else -> "Habis"
+                                                },
                                                 fontSize = 10.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = if (barang.stokTersedia > 0) StatusAvailableText else StatusDamagedText
+                                                color = if (isSelectable) StatusAvailableText else StatusDamagedText
                                             )
                                         }
                                     }
                                 },
                                 onClick = {
-                                    selectedBarang = barang
-                                    if (qtyPinjam > barang.stokTersedia && barang.stokTersedia > 0) {
-                                        qtyPinjam = 1
+                                    if (isSelectable) {
+                                        selectedBarang = barang
+                                        if (qtyPinjam > barang.stokTersedia && barang.stokTersedia > 0) {
+                                            qtyPinjam = 1
+                                        }
+                                        isDropdownExpanded = false
                                     }
-                                    isDropdownExpanded = false
                                 }
                             )
                         }

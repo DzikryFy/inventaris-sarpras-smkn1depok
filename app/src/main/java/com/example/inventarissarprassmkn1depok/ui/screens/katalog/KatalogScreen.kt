@@ -90,6 +90,7 @@ import com.example.inventarissarprassmkn1depok.ui.theme.StatusBorrowedBg
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusBorrowedDot
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusBorrowedText
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusDamagedBg
+import com.example.inventarissarprassmkn1depok.ui.theme.StatusDamagedDot
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusDamagedText
 import com.example.inventarissarprassmkn1depok.ui.theme.Surface
 import com.example.inventarissarprassmkn1depok.ui.theme.SurfaceContainer
@@ -97,6 +98,9 @@ import com.example.inventarissarprassmkn1depok.ui.theme.SurfaceContainerHigh
 import com.example.inventarissarprassmkn1depok.ui.theme.SurfaceContainerLow
 import com.example.inventarissarprassmkn1depok.ui.utils.BarangImageHelper
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -418,7 +422,8 @@ fun KatalogScreen(
                 }
             } else {
                 items(uiState.barangList, key = { it.idBarang }) { item ->
-                    val isAvailable = item.stokTersedia > 0
+                    val isConditionGood = item.kondisi.equals("Baik", ignoreCase = true)
+                    val isAvailable = item.stokTersedia > 0 && isConditionGood
                     val categoryPrefix = when {
                         item.namaKategori.contains("Multimedia", true) -> "MM"
                         item.namaKategori.contains("Olahraga", true) -> "OR"
@@ -502,11 +507,15 @@ fun KatalogScreen(
                                                 modifier = Modifier
                                                     .size(6.dp)
                                                     .clip(CircleShape)
-                                                    .background(if (isAvailable) StatusAvailableDot else StatusDamagedText)
+                                                    .background(if (isAvailable) StatusAvailableDot else StatusDamagedDot)
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
-                                                text = if (isAvailable) "${item.stokTersedia} dari ${item.stokTotal} Unit" else "Habis Dipinjam",
+                                                text = when {
+                                                    !isConditionGood -> "Perlu Servis"
+                                                    item.stokTersedia > 0 -> "${item.stokTersedia} dari ${item.stokTotal} Unit"
+                                                    else -> "Habis Dipinjam"
+                                                },
                                                 fontSize = 11.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (isAvailable) StatusAvailableText else StatusDamagedText
@@ -608,8 +617,12 @@ fun KatalogScreen(
 
                                     Button(
                                         onClick = {
-                                            selectedItemForLoan = item
-                                            borrowerName = if (!isStaff) currentBorrowerName else ""
+                                            if (isAvailable) {
+                                                selectedItemForLoan = item
+                                                borrowerName = if (!isStaff) currentBorrowerName else ""
+                                                purpose = "Praktikum KBM"
+                                                loanQty = "1"
+                                            }
                                         },
                                         enabled = isAvailable,
                                         modifier = Modifier.height(38.dp),
@@ -617,17 +630,22 @@ fun KatalogScreen(
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = Secondary,
                                             contentColor = Color.White,
-                                            disabledContainerColor = SurfaceContainerHigh
+                                            disabledContainerColor = if (!isConditionGood) StatusDamagedBg else SurfaceContainerHigh,
+                                            disabledContentColor = if (!isConditionGood) StatusDamagedText else OnSurfaceVariant
                                         )
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.AddTask,
+                                            imageVector = if (!isConditionGood) Icons.Default.Build else Icons.Default.AddTask,
                                             contentDescription = null,
                                             modifier = Modifier.size(15.dp)
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
-                                            text = if (isAvailable) "Pinjam" else "Kosong",
+                                            text = when {
+                                                !isConditionGood -> "Dalam Servis"
+                                                item.stokTersedia <= 0 -> "Kosong"
+                                                else -> "Pinjam"
+                                            },
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.SemiBold
                                         )
@@ -800,24 +818,44 @@ fun KatalogScreen(
                     )
                 }
 
+                val qtyInt = loanQty.toIntOrNull() ?: 1
+                val canSubmit = purpose.isNotBlank() && qtyInt > 0 && qtyInt <= barang.stokTersedia
                 Button(
                     onClick = {
-                        val name = (if (!isStaff) currentBorrowerName else borrowerName).trim()
+                        val name = (if (!uiState.isStaff) uiState.currentBorrowerName else borrowerName).trim()
+                        val id = (if (!uiState.isStaff) uiState.currentBorrowerId else "MANUAL-01").trim()
+                        val role = if (!uiState.isStaff) uiState.currentBorrowerRole else "Guru"
                         if (name.isNotEmpty()) {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Peminjaman '${barang.namaBarang}' untuk '$name' berhasil diajukan!")
-                            }
+                            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                            val calendar = Calendar.getInstance()
+                            calendar.add(Calendar.DAY_OF_YEAR, 1)
+                            val batasKembali = dateFormat.format(calendar.time)
+
+                            viewModel.submitPinjamQuick(
+                                barang = barang,
+                                borrowerName = name,
+                                borrowerId = id,
+                                borrowerRole = role,
+                                qty = qtyInt,
+                                batasKembali = batasKembali,
+                                keperluan = purpose.trim().ifBlank { "Praktikum KBM / Kegiatan Sekolah" }
+                            )
                             selectedItemForLoan = null
                             borrowerName = ""
+                            purpose = "Praktikum KBM"
+                            loanQty = "1"
                         }
                     },
+                    enabled = canSubmit,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Secondary,
-                        contentColor = Color.White
+                        contentColor = Color.White,
+                        disabledContainerColor = CardBorder,
+                        disabledContentColor = OnSurfaceVariant.copy(alpha = 0.6f)
                     )
                 ) {
                     Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))

@@ -56,6 +56,14 @@ class SirkulasiRepository(
             val barang = barangDao.getBarangById(peminjaman.idBarangFk)
                 ?: return Result.failure(IllegalArgumentException("Barang dengan ID ${peminjaman.idBarangFk} tidak ditemukan."))
 
+            if (!barang.kondisi.equals("Baik", ignoreCase = true)) {
+                return Result.failure(
+                    IllegalStateException(
+                        "Aset '${barang.namaBarang}' berstatus '${barang.kondisi}' sehingga tidak dapat dipinjam."
+                    )
+                )
+            }
+
             if (barang.stokTersedia < peminjaman.jumlahPinjam) {
                 return Result.failure(
                     IllegalStateException(

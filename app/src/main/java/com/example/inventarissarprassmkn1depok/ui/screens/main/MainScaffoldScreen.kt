@@ -49,7 +49,8 @@ fun MainScaffoldScreen(
             barangDao = database.barangDao(),
             kategoriDao = database.kategoriDao(),
             peminjamanDao = database.peminjamanDao(),
-            dashboardDao = database.dashboardDao()
+            dashboardDao = database.dashboardDao(),
+            adminDao = database.adminDao()
         )
     }
 
@@ -75,7 +76,7 @@ fun MainScaffoldScreen(
     )
 
     val katalogViewModel: KatalogViewModel = viewModel(
-        factory = KatalogViewModel.Factory(sarprasRepository)
+        factory = KatalogViewModel.Factory(sarprasRepository, authRepository)
     )
 
     val sirkulasiViewModel: SirkulasiViewModel = viewModel(

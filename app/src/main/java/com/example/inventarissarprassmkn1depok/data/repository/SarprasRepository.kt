@@ -1,5 +1,6 @@
 package com.example.inventarissarprassmkn1depok.data.repository
 
+import com.example.inventarissarprassmkn1depok.data.local.dao.AdminDao
 import com.example.inventarissarprassmkn1depok.data.local.dao.BarangDao
 import com.example.inventarissarprassmkn1depok.data.local.dao.DashboardDao
 import com.example.inventarissarprassmkn1depok.data.local.dao.KategoriDao
@@ -16,7 +17,8 @@ class SarprasRepository(
     private val barangDao: BarangDao,
     private val kategoriDao: KategoriDao,
     private val peminjamanDao: PeminjamanDao,
-    private val dashboardDao: DashboardDao
+    private val dashboardDao: DashboardDao,
+    private val adminDao: AdminDao? = null
 ) {
     // 1. Dashboard Metrics & Active Loans
     fun getDashboardStats(): Flow<DashboardStats> = dashboardDao.getDashboardStats()
@@ -49,8 +51,42 @@ class SarprasRepository(
         kategoriDao.getAllKategori()
 
     // 4. Loan & Return Operations
-    suspend fun pinjamBarang(peminjaman: PeminjamanEntity): Boolean =
-        peminjamanDao.pinjamBarang(peminjaman, barangDao)
+    suspend fun getActiveAdminId(): Int? {
+        val admin = adminDao?.getAdminByUsername("admin")
+        return admin?.idAdmin ?: 1
+    }
+
+    suspend fun pinjamBarang(peminjaman: PeminjamanEntity): Result<Unit> {
+        return try {
+            val barang = barangDao.getBarangById(peminjaman.idBarangFk)
+                ?: return Result.failure(IllegalArgumentException("Barang dengan ID ${peminjaman.idBarangFk} tidak ditemukan."))
+
+            if (!barang.kondisi.equals("Baik", ignoreCase = true)) {
+                return Result.failure(
+                    IllegalStateException(
+                        "Aset '${barang.namaBarang}' berstatus '${barang.kondisi}' sehingga tidak dapat dipinjam."
+                    )
+                )
+            }
+
+            if (barang.stokTersedia < peminjaman.jumlahPinjam) {
+                return Result.failure(
+                    IllegalStateException(
+                        "Stok barang '${barang.namaBarang}' tidak mencukupi (Tersedia: ${barang.stokTersedia}, Diminta: ${peminjaman.jumlahPinjam})."
+                    )
+                )
+            }
+
+            val success = peminjamanDao.pinjamBarang(peminjaman, barangDao)
+            if (success) {
+                Result.success(Unit)
+            } else {
+                Result.failure(RuntimeException("Gagal memproses transaksi peminjaman di database."))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     suspend fun kembalikanBarang(
         idPinjam: Int,

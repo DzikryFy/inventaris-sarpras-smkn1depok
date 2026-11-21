@@ -83,10 +83,24 @@ interface BarangDao {
     @Query("UPDATE barang_sarpras SET stok_tersedia = :stokTersedia WHERE id_barang = :idBarang")
     suspend fun updateStokTersedia(idBarang: Int, stokTersedia: Int)
 
-    @Query("UPDATE barang_sarpras SET stok_tersedia = stok_tersedia - :qty WHERE id_barang = :idBarang AND stok_tersedia >= :qty")
+    @Query("""
+        UPDATE barang_sarpras 
+        SET stok_tersedia = CASE 
+            WHEN (stok_tersedia - :qty) < 0 THEN 0 
+            ELSE (stok_tersedia - :qty) 
+        END 
+        WHERE id_barang = :idBarang AND stok_tersedia >= :qty
+    """)
     suspend fun reduceStok(idBarang: Int, qty: Int): Int
 
-    @Query("UPDATE barang_sarpras SET stok_tersedia = MIN(stok_total, stok_tersedia + :qty) WHERE id_barang = :idBarang")
+    @Query("""
+        UPDATE barang_sarpras 
+        SET stok_tersedia = CASE 
+            WHEN (stok_tersedia + :qty) > stok_total THEN stok_total 
+            ELSE (stok_tersedia + :qty) 
+        END 
+        WHERE id_barang = :idBarang
+    """)
     suspend fun restoreStok(idBarang: Int, qty: Int): Int
 
     @Query("UPDATE barang_sarpras SET kondisi = :kondisi WHERE id_barang = :idBarang")

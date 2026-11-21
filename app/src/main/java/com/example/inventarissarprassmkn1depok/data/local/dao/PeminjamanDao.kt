@@ -103,6 +103,10 @@ interface PeminjamanDao {
     @Transaction
     suspend fun pinjamBarang(peminjaman: PeminjamanEntity, barangDao: BarangDao): Boolean {
         val barang = barangDao.getBarangById(peminjaman.idBarangFk) ?: return false
+        // Validasi kondisi: Hanya barang dalam kondisi 'Baik' yang diizinkan untuk dipinjam
+        if (!barang.kondisi.equals("Baik", ignoreCase = true)) {
+            return false
+        }
         if (barang.stokTersedia < peminjaman.jumlahPinjam) {
             return false
         }
@@ -127,9 +131,15 @@ interface PeminjamanDao {
 
         val updated = updatePengembalian(idPinjam, tglKembaliReal, kondisiKembali, catatanTambahan)
         if (updated > 0) {
-            barangDao.restoreStok(pinjam.idBarangFk, pinjam.jumlahPinjam)
-            if (kondisiKembali.contains("Rusak", ignoreCase = true)) {
+            val isRusak = kondisiKembali.contains("Rusak", ignoreCase = true) ||
+                    kondisiKembali.contains("Servis", ignoreCase = true)
+            if (isRusak) {
+                // Tandai barang menjadi 'Perlu Servis'
                 barangDao.updateKondisiBarang(pinjam.idBarangFk, "Perlu Servis")
+            } else {
+                // Pulihkan kuantitas stok_tersedia dan pastikan kondisi 'Baik'
+                barangDao.restoreStok(pinjam.idBarangFk, pinjam.jumlahPinjam)
+                barangDao.updateKondisiBarang(pinjam.idBarangFk, "Baik")
             }
             return true
         }

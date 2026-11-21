@@ -406,7 +406,7 @@ fun SirkulasiScreen(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 88.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(
@@ -600,7 +600,7 @@ private fun PeminjamanItemCard(
                             .border(BorderStroke(1.dp, CardBorder), CircleShape)
                     ) {
                         Image(
-                            painter = painterResource(id = UserAvatarHelper.getBorrowerAvatarRes(loan.tipePeminjam, loan.nomorIdentitas)),
+                            painter = painterResource(id = UserAvatarHelper.getBorrowerAvatarRes(loan.tipePeminjam, loan.nomorIdentitas, loan.namaPeminjam)),
                             contentDescription = loan.namaPeminjam,
                             modifier = Modifier
                                 .fillMaxSize()
@@ -608,18 +608,22 @@ private fun PeminjamanItemCard(
                         )
                     }
 
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = loan.namaPeminjam,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = OnSurface
+                            color = OnSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             text = "ID: ${loan.nomorIdentitas}",
                             fontSize = 11.sp,
                             fontFamily = FontFamily.Monospace,
-                            color = OnSurfaceVariant
+                            color = OnSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -675,24 +679,47 @@ private fun PeminjamanItemCard(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
+                        Text(
+                            text = loan.namaBarang,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = OnSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text(
-                                text = loan.namaBarang,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = OnSurface,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Text(
-                                text = "(${loan.kodeBarang})",
-                                fontSize = 11.sp,
-                                fontFamily = FontFamily.Monospace,
-                                color = OnSurfaceVariant
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .background(Color(0xFFE8F0FE), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 6.dp, vertical = 1.dp)
+                            ) {
+                                Text(
+                                    text = loan.kodeBarang,
+                                    fontSize = 10.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Secondary
+                                )
+                            }
+
+                            if (!loan.namaKategori.isNullOrBlank()) {
+                                Text(
+                                    text = "•",
+                                    fontSize = 10.sp,
+                                    color = CardBorder
+                                )
+                                Text(
+                                    text = loan.namaKategori,
+                                    fontSize = 11.sp,
+                                    color = OnSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
 
                         Text(

@@ -27,14 +27,27 @@ object UserAvatarHelper {
         }
     }
 
-    fun getBorrowerAvatarRes(tipePeminjam: String, nomorIdentitas: String? = null): Int {
+    fun getBorrowerAvatarRes(
+        tipePeminjam: String,
+        nomorIdentitas: String? = null,
+        namaPeminjam: String? = null
+    ): Int {
         val tipe = tipePeminjam.trim().lowercase()
         val id = nomorIdentitas?.trim() ?: ""
+        val nama = (namaPeminjam ?: "").trim().lowercase()
+
+        val isFemale = nama.contains("sri") || nama.contains("wahyuni") ||
+                nama.contains("ibu") || nama.contains("dra") ||
+                nama.contains("nur") || nama.contains("dewi") ||
+                nama.contains("putri") || nama.contains("retno") ||
+                nama.contains("siti") || nama.contains("ani")
 
         return when {
-            tipe == "guru" || id.startsWith("1979") -> R.drawable.ic_avatar_guru
+            tipe == "guru" || id.startsWith("1979") || id.startsWith("1982") -> {
+                if (isFemale) R.drawable.ic_avatar_guru else R.drawable.ic_avatar_guru_pria
+            }
             tipe == "siswa" || tipe == "osis" || id == "22231045" -> R.drawable.ic_avatar_siswa
-            tipe.contains("toolman") || id.startsWith("1992") -> R.drawable.ic_avatar_toolman
+            tipe.contains("toolman") || id.startsWith("1992") || id.startsWith("tlm") -> R.drawable.ic_avatar_toolman
             tipe.contains("staf") || tipe.contains("admin") -> R.drawable.ic_avatar_admin
             else -> R.drawable.ic_avatar_siswa
         }

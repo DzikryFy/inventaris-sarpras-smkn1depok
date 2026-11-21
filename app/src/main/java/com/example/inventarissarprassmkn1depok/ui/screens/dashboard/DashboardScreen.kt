@@ -794,7 +794,7 @@ fun DashboardScreen(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Image(
-                                            painter = painterResource(id = UserAvatarHelper.getBorrowerAvatarRes(loan.tipePeminjam, loan.nomorIdentitas)),
+                                            painter = painterResource(id = UserAvatarHelper.getBorrowerAvatarRes(loan.tipePeminjam, loan.nomorIdentitas, loan.namaPeminjam)),
                                             contentDescription = null,
                                             modifier = Modifier
                                                 .fillMaxSize()

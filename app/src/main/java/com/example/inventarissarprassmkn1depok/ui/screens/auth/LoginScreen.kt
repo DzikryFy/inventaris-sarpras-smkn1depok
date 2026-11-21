@@ -152,7 +152,7 @@ fun LoginScreen(
             )
 
             Text(
-                text = "Sistem Sarpras SMKN 1 Depok",
+                text = "SarprasGo • SMKN 1 Depok",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Normal,
                 color = OnSurfaceVariant,

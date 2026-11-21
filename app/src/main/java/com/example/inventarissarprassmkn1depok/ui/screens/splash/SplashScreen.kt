@@ -94,8 +94,8 @@ fun SplashScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = "Inventaris Sarpras",
-                fontSize = 26.sp,
+                text = "SarprasGo",
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = OnSurface,
                 letterSpacing = (-0.5).sp,

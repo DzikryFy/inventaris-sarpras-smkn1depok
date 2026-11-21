@@ -8,13 +8,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -75,6 +78,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.inventarissarprassmkn1depok.R
 import com.example.inventarissarprassmkn1depok.data.local.model.BarangWithKategori
 import com.example.inventarissarprassmkn1depok.ui.theme.CardBorder
 import com.example.inventarissarprassmkn1depok.ui.theme.OnSurface
@@ -139,6 +143,87 @@ fun KatalogScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Surface,
+        topBar = {
+            // Institutional Top Bar with Status Bar Inset
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .border(BorderStroke(1.dp, CardBorder.copy(alpha = 0.5f)))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .height(64.dp)
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo_smkn1depok),
+                            contentDescription = "Logo",
+                            modifier = Modifier.size(36.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "SMKN 1 DEPOK",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Secondary,
+                                letterSpacing = 0.5.sp
+                            )
+                            Text(
+                                text = "Katalog Sarpras",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = OnSurface
+                            )
+                        }
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(SurfaceContainerHigh, RoundedCornerShape(9999.dp))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "${uiState.totalCount} Aset",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = OnSurface
+                            )
+                        }
+
+                        if (isStaff) {
+                            Button(
+                                onClick = { viewModel.openCreateBarang() },
+                                colors = ButtonDefaults.buttonColors(containerColor = Secondary),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(32.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("+ Aset Baru", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+        },
         floatingActionButton = {
             if (isStaff) {
                 // Extended Floating Action Button (Stitch Screen 4)
@@ -169,6 +254,7 @@ fun KatalogScreen(
                 )
             }
         },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         modifier = modifier.fillMaxSize()
     ) { innerPadding ->
         LazyColumn(
@@ -180,63 +266,6 @@ fun KatalogScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(2.dp))
-                // 1. Top Operational Banner & Stats Overview (Stitch Screen 4)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(StatusAvailableDot)
-                        )
-                        Text(
-                            text = "KATALOG SARPRAS SMKN 1 DEPOK",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = OnSurfaceVariant,
-                            letterSpacing = 0.5.sp
-                        )
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .background(SurfaceContainerHigh, RoundedCornerShape(9999.dp))
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = "${uiState.totalCount} Aset",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = OnSurface
-                            )
-                        }
-
-                        if (isStaff) {
-                            Button(
-                                onClick = { viewModel.openCreateBarang() },
-                                colors = ButtonDefaults.buttonColors(containerColor = Secondary),
-                                shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.height(32.dp),
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp)
-                            ) {
-                                Icon(imageVector = Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("+ Aset Baru", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                }
             }
 
             // 2. Search Action Hub

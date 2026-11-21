@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -63,18 +65,18 @@ fun BottomNavBar(
         }
     }
 
-    // Solid White container with 1px top border (Anti-AI Slop M3 token)
-    Box(
+    // Solid White container extending to physical bottom edge with safe navigationBarsPadding
+    Surface(
+        color = SurfaceContainerLowest,
         modifier = modifier
             .fillMaxWidth()
-            .height(68.dp)
-            .background(SurfaceContainerLowest)
             .border(BorderStroke(1.dp, CardBorder))
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight()
+                .navigationBarsPadding()
+                .height(60.dp)
                 .padding(horizontal = 4.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
@@ -86,19 +88,18 @@ fun BottomNavBar(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxHeight()
                         .clickable(
                             interactionSource = interactionSource,
                             indication = null
                         ) { onTabSelected(tab) }
-                        .padding(vertical = 6.dp),
+                        .padding(vertical = 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
                     // Pill container for active icon
                     Box(
                         modifier = Modifier
-                            .height(30.dp)
+                            .height(28.dp)
                             .clip(RoundedCornerShape(9999.dp))
                             .background(if (isSelected) Color(0xFFDBE1FF) else Color.Transparent)
                             .padding(horizontal = 16.dp),

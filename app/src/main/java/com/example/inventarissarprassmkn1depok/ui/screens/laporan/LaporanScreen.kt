@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -44,6 +46,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,6 +76,7 @@ import com.example.inventarissarprassmkn1depok.ui.theme.OnSurfaceVariant
 import com.example.inventarissarprassmkn1depok.ui.theme.Secondary
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusAvailableBg
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusAvailableDot
+import com.example.inventarissarprassmkn1depok.ui.utils.DateFormatterHelper
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusAvailableText
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusBorrowedBg
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusBorrowedDot
@@ -103,59 +107,66 @@ fun LaporanScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Surface,
         topBar = {
-            // Header Institusional Laporan & Audit
-            Row(
+            // Header Institusional Laporan & Audit dengan Status Bar Insets
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(64.dp)
                     .background(Color.White)
                     .border(BorderStroke(1.dp, CardBorder.copy(alpha = 0.5f)))
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .height(64.dp)
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_logo_smkn1depok),
-                        contentDescription = "Logo SMKN 1 Depok",
-                        modifier = Modifier.size(36.dp)
-                    )
-                    Column {
-                        Text(
-                            text = "SMKN 1 DEPOK",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Secondary,
-                            letterSpacing = 0.5.sp
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo_smkn1depok),
+                            contentDescription = "Logo SMKN 1 Depok",
+                            modifier = Modifier.size(36.dp)
                         )
+                        Column {
+                            Text(
+                                text = "SMKN 1 DEPOK",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Secondary,
+                                letterSpacing = 0.5.sp
+                            )
+                            Text(
+                                text = "Laporan & Riwayat Audit",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = OnSurface
+                            )
+                        }
+                    }
+
+                    // Badge Rasio Ketersediaan
+                    Box(
+                        modifier = Modifier
+                            .background(StatusAvailableBg, RoundedCornerShape(9999.dp))
+                            .border(BorderStroke(1.dp, CardBorder), RoundedCornerShape(9999.dp))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
                         Text(
-                            text = "Laporan & Riwayat Audit",
-                            fontSize = 16.sp,
+                            text = "Siap ${uiState.summary.persentaseKetersediaan}%",
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = OnSurface
+                            color = StatusAvailableText
                         )
                     }
                 }
-
-                // Badge Rasio Ketersediaan
-                Box(
-                    modifier = Modifier
-                        .background(StatusAvailableBg, RoundedCornerShape(9999.dp))
-                        .border(BorderStroke(1.dp, CardBorder), RoundedCornerShape(9999.dp))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "Siap ${uiState.summary.persentaseKetersediaan}%",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = StatusAvailableText
-                    )
-                }
             }
         },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             // Sticky Bottom Action Bar untuk Kirim Rekapitulasi Laporan
             Box(
@@ -596,7 +607,7 @@ private fun TabRiwayatContent(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "#TRX-${item.idPinjam.toString().padStart(4, '0')} • ${item.tglPinjam.take(10)}",
+                                    text = "#TRX-${item.idPinjam.toString().padStart(4, '0')} • ${DateFormatterHelper.formatIndonesianDateShort(item.tglPinjam)}",
                                     fontSize = 11.sp,
                                     fontFamily = FontFamily.Monospace,
                                     fontWeight = FontWeight.Bold,
@@ -744,7 +755,7 @@ private fun TabLogKerusakanContent(logKerusakan: List<PeminjamanDetail>) {
                         )
 
                         Text(
-                            text = "Peminjam: ${item.namaPeminjam} (${item.tipePeminjam}) • Dikembalikan: ${item.tglKembaliReal ?: "-"}",
+                            text = "Peminjam: ${item.namaPeminjam} (${item.tipePeminjam}) • Dikembalikan: ${DateFormatterHelper.formatIndonesianDateTime(item.tglKembaliReal)}",
                             fontSize = 11.sp,
                             color = OnSurfaceVariant
                         )

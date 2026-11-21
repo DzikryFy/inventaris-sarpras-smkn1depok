@@ -14,11 +14,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -54,6 +56,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -84,6 +87,7 @@ import com.example.inventarissarprassmkn1depok.ui.theme.OutlineVariant
 import com.example.inventarissarprassmkn1depok.ui.theme.PrimaryContainer
 import com.example.inventarissarprassmkn1depok.ui.theme.Secondary
 import com.example.inventarissarprassmkn1depok.ui.utils.BarangImageHelper
+import com.example.inventarissarprassmkn1depok.ui.utils.DateFormatterHelper
 import com.example.inventarissarprassmkn1depok.ui.utils.UserAvatarHelper
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusAvailableBg
 import com.example.inventarissarprassmkn1depok.ui.theme.StatusAvailableDot
@@ -134,59 +138,66 @@ fun SirkulasiScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Surface,
         topBar = {
-            // Header Institusional Sirkulasi Sarpras
-            Row(
+            // Header Institusional Sirkulasi Sarpras dengan Status Bar Insets
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(64.dp)
                     .background(Color.White)
                     .border(BorderStroke(1.dp, CardBorder.copy(alpha = 0.5f)))
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .height(64.dp)
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_logo_smkn1depok),
-                        contentDescription = "Logo",
-                        modifier = Modifier.size(36.dp)
-                    )
-                    Column {
-                        Text(
-                            text = "SMKN 1 DEPOK",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Secondary,
-                            letterSpacing = 0.5.sp
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo_smkn1depok),
+                            contentDescription = "Logo",
+                            modifier = Modifier.size(36.dp)
                         )
+                        Column {
+                            Text(
+                                text = "SMKN 1 DEPOK",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Secondary,
+                                letterSpacing = 0.5.sp
+                            )
+                            Text(
+                                text = "Sirkulasi Sarpras",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = OnSurface
+                            )
+                        }
+                    }
+
+                    // Badge Ringkasan Aktif
+                    Box(
+                        modifier = Modifier
+                            .background(StatusBorrowedBg, RoundedCornerShape(9999.dp))
+                            .border(BorderStroke(1.dp, CardBorder), RoundedCornerShape(9999.dp))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
                         Text(
-                            text = "Sirkulasi Sarpras",
-                            fontSize = 16.sp,
+                            text = "${uiState.rawActiveCount} Dipinjam",
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = OnSurface
+                            color = StatusBorrowedText
                         )
                     }
                 }
-
-                // Badge Ringkasan Aktif
-                Box(
-                    modifier = Modifier
-                        .background(StatusBorrowedBg, RoundedCornerShape(9999.dp))
-                        .border(BorderStroke(1.dp, CardBorder), RoundedCornerShape(9999.dp))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "${uiState.rawActiveCount} Dipinjam",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = StatusBorrowedText
-                    )
-                }
             }
         },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { viewModel.openForm() },
@@ -751,14 +762,15 @@ private fun PeminjamanItemCard(
                     )
                     Text(
                         text = if (isHistory) {
-                            "Kembali: ${loan.tglKembaliReal ?: "-"}"
+                            "Kembali: ${DateFormatterHelper.formatIndonesianDateTime(loan.tglKembaliReal)}"
                         } else {
-                            "Tenggat: ${loan.batasKembali}"
+                            "Tenggat: ${DateFormatterHelper.formatIndonesianDateTime(loan.batasKembali)}"
                         },
                         fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = if (isTerlambat) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isTerlambat) StatusDamagedText else OnSurfaceVariant
+                        fontWeight = if (isTerlambat) FontWeight.Bold else FontWeight.SemiBold,
+                        color = if (isTerlambat) StatusDamagedText else OnSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 

@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -82,6 +84,7 @@ import com.example.inventarissarprassmkn1depok.ui.theme.Error
 import com.example.inventarissarprassmkn1depok.ui.theme.OnSurface
 import com.example.inventarissarprassmkn1depok.ui.theme.OnSurfaceVariant
 import com.example.inventarissarprassmkn1depok.ui.utils.BarangImageHelper
+import com.example.inventarissarprassmkn1depok.ui.utils.DateFormatterHelper
 import com.example.inventarissarprassmkn1depok.ui.utils.UserAvatarHelper
 import com.example.inventarissarprassmkn1depok.ui.theme.PrimaryContainer
 import com.example.inventarissarprassmkn1depok.ui.theme.Secondary
@@ -130,74 +133,81 @@ fun DashboardScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Surface,
         topBar = {
-            // Institutional Top Bar (Stitch Screen 3 Header)
-            Row(
+            // Institutional Top Bar (Stitch Screen 3 Header) with Status Bar Insets
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(64.dp)
-                    .background(Surface)
+                    .background(Color.White)
                     .border(BorderStroke(1.dp, CardBorder.copy(alpha = 0.5f)))
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .height(64.dp)
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_logo_smkn1depok),
-                        contentDescription = "Logo",
-                        modifier = Modifier.size(36.dp)
-                    )
-                    Column {
-                        Text(
-                            text = "SMKN 1 DEPOK",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Secondary,
-                            letterSpacing = 0.5.sp
-                        )
-                        Text(
-                            text = "Dashboard",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = OnSurface
-                        )
-                    }
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = "Notifikasi",
-                            tint = OnSurfaceVariant,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-
-                    IconButton(
-                        onClick = { showLogoutDialog = true },
-                        modifier = Modifier
-                            .size(38.dp)
-                            .clip(CircleShape)
-                            .background(SurfaceContainerLow)
-                            .border(BorderStroke(1.dp, CardBorder), CircleShape)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "Keluar Akun",
-                            tint = Error,
-                            modifier = Modifier.size(18.dp)
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo_smkn1depok),
+                            contentDescription = "Logo",
+                            modifier = Modifier.size(36.dp)
                         )
+                        Column {
+                            Text(
+                                text = "SMKN 1 DEPOK",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Secondary,
+                                letterSpacing = 0.5.sp
+                            )
+                            Text(
+                                text = "Dashboard",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = OnSurface
+                            )
+                        }
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        IconButton(onClick = {}) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Notifikasi",
+                                tint = OnSurfaceVariant,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { showLogoutDialog = true },
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(CircleShape)
+                                .background(SurfaceContainerLow)
+                                .border(BorderStroke(1.dp, CardBorder), CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Logout,
+                                contentDescription = "Keluar Akun",
+                                tint = Error,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
         },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         modifier = modifier.fillMaxSize()
     ) { innerPadding ->
         LazyColumn(
@@ -704,7 +714,7 @@ fun DashboardScreen(
                                     )
                                     Text(text = "•", fontSize = 11.sp, color = CardBorder)
                                     Text(
-                                        text = loan.tglPinjam,
+                                        text = DateFormatterHelper.formatIndonesianDateTime(loan.tglPinjam),
                                         fontSize = 11.sp,
                                         color = OnSurfaceVariant
                                     )
@@ -783,12 +793,15 @@ fun DashboardScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(end = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(30.dp)
+                                            .size(34.dp)
                                             .clip(CircleShape)
                                             .border(BorderStroke(1.dp, CardBorder), CircleShape),
                                         contentAlignment = Alignment.Center
@@ -801,37 +814,49 @@ fun DashboardScreen(
                                                 .clip(CircleShape)
                                         )
                                     }
-                                    Column {
+                                    Column(modifier = Modifier.weight(1f, fill = false)) {
                                         Text(
                                             text = loan.namaPeminjam,
-                                            fontSize = 13.sp,
+                                            fontSize = 12.sp,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = OnSurface
+                                            color = OnSurface,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                         Text(
                                             text = "${loan.tipePeminjam} • ${loan.nomorIdentitas}",
-                                            fontSize = 11.sp,
-                                            color = OnSurfaceVariant
+                                            fontSize = 10.sp,
+                                            color = OnSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                     }
                                 }
 
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color.White,
+                                    border = BorderStroke(1.dp, CardBorder)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Timer,
-                                        contentDescription = null,
-                                        tint = StatusBorrowedDot,
-                                        modifier = Modifier.size(13.dp)
-                                    )
-                                    Text(
-                                        text = "Batas: ${loan.batasKembali}",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = StatusBorrowedText
-                                    )
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Timer,
+                                            contentDescription = null,
+                                            tint = StatusBorrowedDot,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                        Text(
+                                            text = DateFormatterHelper.formatIndonesianDateShort(loan.batasKembali),
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = StatusBorrowedText,
+                                            maxLines = 1
+                                        )
+                                    }
                                 }
                             }
 
